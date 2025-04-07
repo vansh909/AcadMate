@@ -5,8 +5,18 @@ const app = express();
 require('dotenv').config();
 
 
-const User = require('./models/user.model');
-const fake = require('./models/fakeMode');
+
+const userRoutes = require('./routes/user.routes');
+
+app.use(express.json());
+app.use(express.urlencoded({extended:true}));
+app.use('/user', userRoutes)
+
+
+
+
+
+
 app.listen(port, () => {    
     console.log(`Server is running on port ${port}`);
 })
