@@ -6,6 +6,7 @@ require('dotenv').config();
 
 
 const User = require('./models/user.model');
+const fake = require('./models/fakeMode');
 app.listen(port, () => {    
     console.log(`Server is running on port ${port}`);
 })
