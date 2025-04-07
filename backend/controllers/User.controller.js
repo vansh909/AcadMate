@@ -4,7 +4,7 @@ app.use(express.json());
 const user = require('../models/user.model');
 const bcrypt = require('bcrypt');
 
-exports.signup("/signup", async (req,res)=>{
+exports.signup = async (req,res)=>{
     try{
 
         const {name,email,password} = req.body;
@@ -23,6 +23,7 @@ exports.signup("/signup", async (req,res)=>{
         await newUser.save();
         res.status(200).json("User created successfully :D")
     }catch(err){
-        res.status(400).json(err);
+        return res.status(400).json(err);
     }
-})
+}
+
