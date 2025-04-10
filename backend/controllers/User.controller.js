@@ -1,4 +1,4 @@
-const user = require('../models/user.model');
+const User = require('../models/user.model');
 const bcrypt = require('bcryptjs');
 const student = require('../models/student.model');
 const jwt = require('jsonwebtoken');
@@ -16,12 +16,13 @@ const transporter = nodemailer.createTransport({
 
 exports.signup = async (req,res)=>{
     try{
-        if(req.user.role !=='admin'){
+        
+        const { ...data} = req.body;
+        
+        if(req.user.role != 'admin'){
             return res.status(401).json("not authorized to register students");
         }
-
-            const {role, ...data} = req.body;
-            if(role !='student' && role !='teacher'){
+            if(data.role !='student' && data.role !='teacher'){
                 return res.status(401).json("not authorized to register students");
             }
 
@@ -30,13 +31,13 @@ exports.signup = async (req,res)=>{
             }
 
             const hashedpassword = await bcrypt.hash(data.password, 10);
-            const newUser = new User({name: data.name,email: data.email,password: hashedpassword, role:role});
+            const newUser = new User({name: data.name,email: data.email,password: hashedpassword, role:data.role});
             await newUser.save();
-            if (role === 'student') {
+            if (data.role == 'student') {
             const newStudent = new student({
                 student_id:newUser._id,
                 class:data.class,
-                data_of_birth:data.data_of_birth,
+                date_of_birth:data.date_of_birth,
                 father_name:data.father_name,
                 mother_name:data.mother_name,
                 address:data.address,
@@ -45,18 +46,34 @@ exports.signup = async (req,res)=>{
             await newStudent.save();
 
             const mailOptions = {
-                from : 'jaitleyvriti@gmail.com',
+                from: 'jaitleyvriti@gmail.com',
                 to: `${data.email}`,
-                subject: `Welcome ${data.name}`,
-                text: `You have been registered as a ${role}.\n\nLogin details:\nEmail: ${data.email}\nPassword: ${data.password}`
-            }
+                subject: `🎉 Welcome to AcadMate, ${data.name}!`,
+                text: `Hello ${data.name},\n\nWelcome aboard! 🎓
+            
+            We're excited to have you join AcadMate as a valued ${data.role}. Get ready to explore, learn, and grow with us.
+            
+            Here are your login credentials:
+            📧 Email: ${data.email}
+            🔐 Password: ${data.password}
+            
+            Make sure to keep this information safe. If you have any questions or need assistance, feel free to reach out.
+            
+            Let’s make this journey amazing together! ✨
+            
+            Best regards,  
+            The AcadMate Team`
+            };
+            
             transporter.sendMail(mailOptions);
+            
     
             }
-            return res.status(201).json({ message: `${role} registered successfully`, user: newUser });
+            return res.status(201).json({ message: `${data.role} registered successfully`, user: newUser });
 
     }catch(err){
-        res.status(400).json(err);
+        console.log(err)
+        res.status(500).json(err);
     }
 }
 
@@ -64,7 +81,7 @@ exports.signup = async (req,res)=>{
 exports.login = async(req, res)=>{
     try{
         const {email,password} = req.body;
-        const existingUser = await user.findOne({email});
+        const existingUser = await User.findOne({email});
 
         if(!existingUser) return res.status(400).json("User does not exist, please sign up");
 
