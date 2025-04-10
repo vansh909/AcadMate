@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const studentSchema = new mongoose.Schema({
     student_id:{
         type:mongoose.Schema.Types.ObjectId,
-        required:true
+        required:true,
+        ref:"user"
     },
     class:{
         type:String,
