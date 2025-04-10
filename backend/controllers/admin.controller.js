@@ -1,5 +1,5 @@
 const User  = require('../models/user.model');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const validator = require('validator')
 exports.adminSignup = async (req,res)=>{
     const existingAdmin = await User.findOne({role: "admin"});
