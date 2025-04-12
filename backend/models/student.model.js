@@ -4,10 +4,11 @@ const studentSchema = new mongoose.Schema({
     student_id:{
         type:mongoose.Schema.Types.ObjectId,
         required:true,
-        ref:"user"
+        ref:"User"
     },
     class:{
-        type:String,
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'class',
         required:true
     },
     date_of_birth:{
