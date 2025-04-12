@@ -37,16 +37,12 @@ const teacherSchema = new mongoose.Schema({
         required:true,
         default:false
     },
-    classes_assigned:{    //reVisit this and change to objectId
-        type:String,
-        required:true
-    },
     qualifications:{
         type:[String],
         required:true
     },
     subject_specialization:{
-        type:String,
+        type:mongoose.Schema.Types.ObjectId,
         required:true
     }
 
