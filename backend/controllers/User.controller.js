@@ -5,6 +5,7 @@ const Teacher = require('../models/teacher.model')
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const nodemailer = require("nodemailer");
+const refreshtoken = require('./auth.controller');
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -108,7 +109,7 @@ exports.signup = async (req, res) => {
           
           If you have any questions or need assistance, feel free to reach out to the AcadMate support team.
           
-          Let’s make learning inspiring together! ✨
+          Let's make learning inspiring together! ✨
           
           Warm regards,  
           The AcadMate Team`
@@ -143,13 +144,26 @@ exports.login = async (req, res) => {
 
     if (!isPasswordCorrect) return res.status(400).json("Invalid credentials");
     const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
+      expiresIn: "10s",
+    });
+    const refreshtoken = jwt.sign({id:existingUser.id}, process.env.refreshkey, {
+      expiresIn:"17d"
     });
 
     res.cookie("token", token, {
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      secure:true,
+      sameSite:"strict",
+      maxAge: 15 * 60  * 1000, // 15 minutes
     });
+
+    //refresh token for 17 days
+    res.cookie("refreshtoken", refreshtoken, {
+      httpOnly:true,
+      secure:true,
+      sameSite:"strict",
+      maxAge:17*24*60*60*1000
+    })
 
     return res.status(200).json("Login successful");
   } catch (err) {
