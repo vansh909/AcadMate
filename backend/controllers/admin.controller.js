@@ -2,6 +2,12 @@ const User  = require('../models/user.model');
 const bcrypt = require('bcryptjs');
 const validator = require('validator')
 const jwt = require('jsonwebtoken')
+const Subject = require('../models/subject.model');
+const Class = require('../models/class.model');
+const MappingSchema = require('../models/subject-teacher-mapping.model');
+
+
+
 exports.adminSignup = async (req,res)=>{
     const existingAdmin = await User.findOne({role: "admin"});
     if(existingAdmin) return res.status(400).json("Admin already exists, please log in");
@@ -18,17 +24,17 @@ exports.adminSignup = async (req,res)=>{
             email:email,
             password:hashedpassword,
             role: "admin"
-        })
+        })    
 
         await newAdmin.save()
         
-       return res.status(200).json("Admin created successfully :D")
+       return res.status(200).json("Admin created successfully :D") 
     }catch(err){
         console.error(err);
         return res.status(400).json(err);
-    }
+    }    
 
-}
+}    
 
 
 
@@ -47,12 +53,69 @@ exports.adminLogin = async(req, res)=>{
         res.cookie("token", token, {
             httpOnly: true,
             maxAge: 24 * 60 * 60 * 1000, // 1 day
-        });
+        });    
 
 
         return res.status(200).json("Login successful");
     }catch(err){
         console.error(err);
         return res.status(500).json({Error: "Internal server error"});
+    }    
+}    
+
+
+
+
+exports.mappingTeacherSubjectClass = async(req, res)=>{
+
+    const {...data} = req.body;
+    const user = req.user;
+    try {
+        if(user.role != 'admin') return res.status(401).json({Message: "Not Authorized to perform action!"})
+        if(!data.teacherName || !data.subjectName || !data.className) return res.status(400).json({Message:"All Fields are required!"});
+        const teacher  = await User.findOne({name: data.teacherName, role: 'teacher'});
+        const classs = await Class.findOne({class_name: data.className});
+        const subject = await Subject.findOne({subjectName: data.subjectName});
+
+        const newMapping =  new MappingSchema({
+            teacherId: teacher.id,
+            classId: classs.id,
+            subjectId: subject.id
+        });
+
+        await newMapping.save();
+        return res.status(400).json({Message: "Alloted the class and subject to the teacher"});
+       
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({Error:"Intertnal Server Error!"});
     }
 }
+
+
+exports.classes = async (req, res) => {
+
+    
+    try {
+        const user = req.user;
+      const { class_name } = req.body;
+      if(user.role != 'admin') return res.status(401).json({Message: "Not Authorized to perform action"})
+      console.log(class_name);
+      const class_teacher_id = req.params.id;
+      console.log(class_teacher_id);
+  
+      const newClass = new Class({
+        class_teacher_id: class_teacher_id,
+        class_name: class_name,
+        total_students: 0,
+      });
+  
+      await newClass.save();
+      console.log(newClass);
+  
+      return res.status(200).json("class added");
+    } catch (err) {
+      console.log(err);
+      return res.status(400).json(err);
+    }
+  };

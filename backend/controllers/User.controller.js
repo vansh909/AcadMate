@@ -5,6 +5,7 @@ const Teacher = require('../models/teacher.model')
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const nodemailer = require("nodemailer");
+const Subject = require('../models/subject.model')
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -17,6 +18,7 @@ const transporter = nodemailer.createTransport({
 exports.signup = async (req, res) => {
   try {
     const { ...data } = req.body;
+   
 
     if (req.user.role != "admin") {
       return res
@@ -80,6 +82,12 @@ exports.signup = async (req, res) => {
 
 
     } else if (data.role == "teacher") {
+
+      const subject = await Subject.findOne({subjectName: data.subject_specialization})
+      if(!subject){
+        return res.status(400).json({Message: "Subject Not Found!"})
+      }
+      
         const newTeacher = new Teacher({
             teacherId:newUser._id,
             date_of_birth: data.date_of_birth,
@@ -90,7 +98,7 @@ exports.signup = async (req, res) => {
             is_class_teacher:data.is_class_teacher,
             qualifications:data.qualifications,
             classes_assigned:data.classes_assigned,
-            subject_specialization:data.subject_specialization
+            subject_specialization:subject._id 
         });
 
         const mailOptions = {
