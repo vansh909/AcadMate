@@ -1,12 +1,13 @@
 const User = require("../models/user.model");
 const bcrypt = require("bcryptjs");
 const student = require("../models/student.model");
-const Teacher = require('../models/teacher.model')
+const Teacher = require("../models/teacher.model");
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const nodemailer = require("nodemailer");
-const Subject = require('../models/subject.model')
-const refreshtoken = require('./auth.controller');
+const Subject = require("../models/subject.model");
+const refreshtoken = require("./auth.controller");
+const Class = require("../models/class.model");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -19,7 +20,6 @@ const transporter = nodemailer.createTransport({
 exports.signup = async (req, res) => {
   try {
     const { ...data } = req.body;
-   
 
     if (req.user.role != "admin") {
       return res
@@ -34,11 +34,17 @@ exports.signup = async (req, res) => {
       return res.status(400).json("email not valid");
     }
 
-    const existingUser = await User.findOne({email: data.email})
-    if(existingUser) return res.status(400).json({Message:"User already exists"})
+    const existingUser = await User.findOne({ email: data.email });
+    if (existingUser)
+      return res.status(400).json({ Message: "User already exists" });
 
-        const existingUserWithSameName = await User.findOne({name: data.name})
-        if(existingUserWithSameName) return res.status(400).json({Message:"User with the same name already exists! Try another name"})
+    const existingUserWithSameName = await User.findOne({ name: data.name });
+    if (existingUserWithSameName)
+      return res
+        .status(400)
+        .json({
+          Message: "User with the same name already exists! Try another name",
+        });
     const hashedpassword = await bcrypt.hash(data.password, 10);
     const newUser = new User({
       name: data.name,
@@ -48,16 +54,32 @@ exports.signup = async (req, res) => {
     });
     await newUser.save();
     if (data.role == "student") {
+      if (
+        !data.class ||
+        !data.date_of_birth ||
+        !data.father_name ||
+        !data.mother_name ||
+        !data.address ||
+        !data.phone_number
+      )
+        return res
+          .status(400)
+          .json({ Message: "All Fields of students are mandatory to fill" });
+      const className = await Class.findOne({ class_name: data.class });
+      if (!className)
+        return res.status(400).json({ Message: "Error Fetching Class" });
       const newStudent = new student({
         student_id: newUser._id,
-        class: data.class,
+        class: className.id,
         date_of_birth: data.date_of_birth,
         father_name: data.father_name,
         mother_name: data.mother_name,
         address: data.address,
         phone_number: data.phone_number,
       });
+      await className.updateOne({$inc: {total_students: 1}});
       await newStudent.save();
+
 
       const mailOptions = {
         from: "jaitleyvriti@gmail.com",
@@ -80,33 +102,33 @@ exports.signup = async (req, res) => {
       };
 
       transporter.sendMail(mailOptions);
-
-
     } else if (data.role == "teacher") {
-
-      const subject = await Subject.findOne({subjectName: data.subject_specialization})
-      if(!subject){
-        return res.status(400).json({Message: "Subject Not Found!"})
+      const subject = await Subject.findOne({
+        subjectName: data.subject_specialization,
+      });
+      if (!subject) {
+        return res.status(400).json({ Message: "Subject Not Found!" });
       }
-      
-        const newTeacher = new Teacher({
-            teacherId:newUser._id,
-            date_of_birth: data.date_of_birth,
-            gender:data.gender,
-            years_of_experience:data.years_of_experience,
-            phone_number:data.phone_number,
-            address:data.address,
-            is_class_teacher:data.is_class_teacher,
-            qualifications:data.qualifications,
-            classes_assigned:data.classes_assigned,
-            subject_specialization:subject._id 
-        });
 
-        const mailOptions = {
-            from: "AcadMate.team@gmail.com",
-            to: `${data.email}`,
-            subject: `👩‍🏫 Welcome to AcadMate, ${data.name}!`,
-            text: `Dear ${data.name},\n\nWelcome to **AcadMate**! 🎓  
+      if(!data.date_of_birth ||!data.gender ||!data.years_of_experience || !data.phone_number || !data.address ||!data.qualifications)
+        return res.status(400).json({Message:"All Fields of Teacher Required!"})
+      const newTeacher = new Teacher({
+        teacherId: newUser._id,
+        date_of_birth: data.date_of_birth,
+        gender: data.gender,
+        years_of_experience: data.years_of_experience,
+        phone_number: data.phone_number,
+        address: data.address,
+        is_class_teacher:false,
+        qualifications: data.qualifications,
+        subject_specialization: subject._id,
+      });
+
+      const mailOptions = {
+        from: "AcadMate.team@gmail.com",
+        to: `${data.email}`,
+        subject: `👩‍🏫 Welcome to AcadMate, ${data.name}!`,
+        text: `Dear ${data.name},\n\nWelcome to **AcadMate**! 🎓  
           We're excited to have you on board as a valued member of our teaching faculty.
           
           Here are your login credentials:  
@@ -120,13 +142,12 @@ exports.signup = async (req, res) => {
           Let's make learning inspiring together! ✨
           
           Warm regards,  
-          The AcadMate Team`
-          };
-          
+          The AcadMate Team`,
+      };
 
-        transporter.sendMail(mailOptions);
-          
-        await newTeacher.save()
+      transporter.sendMail(mailOptions);
+
+      await newTeacher.save();
     }
     return res
       .status(201)
@@ -154,24 +175,28 @@ exports.login = async (req, res) => {
     const token = jwt.sign({ id: existingUser._id }, process.env.JWT_SECRET, {
       expiresIn: "10s",
     });
-    const refreshtoken = jwt.sign({id:existingUser.id}, process.env.refreshkey, {
-      expiresIn:"17d"
-    });
+    const refreshtoken = jwt.sign(
+      { id: existingUser.id },
+      process.env.refreshkey,
+      {
+        expiresIn: "17d",
+      }
+    );
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure:true,
-      sameSite:"strict",
-      maxAge: 15 * 60  * 1000, // 15 minutes
+      secure: true,
+      sameSite: "strict",
+      maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
     //refresh token for 17 days
     res.cookie("refreshtoken", refreshtoken, {
-      httpOnly:true,
-      secure:true,
-      sameSite:"strict",
-      maxAge:17*24*60*60*1000
-    })
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 17 * 24 * 60 * 60 * 1000,
+    });
 
     return res.status(200).json("Login successful");
   } catch (err) {

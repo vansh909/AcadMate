@@ -8,7 +8,7 @@ const {isAuthenticated} = require('../middlewares/auth.middleware')
 router.post('/subject', isAuthenticated,addSubject)
 router.post('/signup', adminSignup);
 router.post('/login', adminLogin)
-router.post("/addclass/:id",isAuthenticated,classes)
+router.post("/addclass",isAuthenticated,classes)
 router.post('/mapping', isAuthenticated, mappingTeacherSubjectClass);
 
 
