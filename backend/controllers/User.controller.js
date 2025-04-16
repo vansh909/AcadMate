@@ -20,6 +20,7 @@ const transporter = nodemailer.createTransport({
 exports.signup = async (req, res) => {
   try {
     const { ...data } = req.body;
+    console.log(...data);
 
     if (req.user.role != "admin") {
       return res
