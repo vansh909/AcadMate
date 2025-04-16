@@ -18,8 +18,6 @@ app.use(express.urlencoded({extended:true}));
 app.use('/user', userRoutes)
 app.use('/admin', adminRoutes)
 app.use("/", refreshTokenRoutes)
-app.use("/teacher", teacherRoutes)
-
 
 
 
