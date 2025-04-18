@@ -1,7 +1,6 @@
 import React from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import axios from 'axios';
 
 const StudentForm = () => {
   const initialValues = {
@@ -31,12 +30,25 @@ const StudentForm = () => {
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      const response = await axios.post('/user/signup', values);
-      alert('Student registered successfully!');
-      resetForm();
+      const response = await fetch('http://localhost:4000/user/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      });
+
+      if (response.ok) {
+        alert('Student registered successfully!');
+        resetForm();
+      } else {
+        const errorData = await response.json();
+        alert(errorData?.message || 'Registration failed');
+      }
     } catch (error) {
-      alert(error.response?.data?.message || 'Registration failed');
+      alert('An error occurred during registration');
     }
+
     setSubmitting(false);
   };
 
@@ -69,7 +81,18 @@ const StudentForm = () => {
               <ErrorMessage name="email" component="div" className="text-red-500 text-sm mt-1" />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Password</label>
+              <Field
+                name="password"
+                type="password"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              <ErrorMessage name="password" component="div" className="text-red-500 text-sm mt-1" />
+            </div>
+
             {/* Add other fields similarly */}
+
           </div>
 
           <button

@@ -199,7 +199,13 @@ exports.login = async (req, res) => {
       maxAge: 17 * 24 * 60 * 60 * 1000,
     });
 
-    return res.status(200).json("Login successful");
+    console.log(existingUser.role);
+    return res.status(200).json(
+      {
+        message:"Login successful",
+        role: existingUser.role,
+      });
+      
   } catch (err) {
     console.error(err);
     return res.status(500).json({ Error: "Internal server error" });

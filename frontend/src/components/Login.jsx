@@ -1,8 +1,15 @@
 import React from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+
+import AdminDashboard from './AdminDashboard';
+
+<Routes>
+  <Route path="/AdminDashboard" element={<AdminDashboard />} />
+</Routes>
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,22 +26,39 @@ const Login = () => {
 
   const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
     try {
-      const response = await axios.post('/user/login', values);
-      const { role } = response.data;
+      const response = await fetch('http://localhost:4000/user/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+        credentials: 'include',
+      });
       
-      // Redirect based on user role
-      switch(role) {
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+      
+      const { role } = data;
+      
+      switch (role) {
+        case 'admin':
+          navigate('/AdminDashboard');
+          break;
         case 'student':
-          navigate('/student-dashboard');
+          navigate('/StudentDashboard');
           break;
         case 'teacher':
-          navigate('/teacher-dashboard');
+          navigate('/TeacherDashboard');
           break;
         default:
           setFieldError('email', 'Invalid user role');
-      }
+      }      
     } catch (error) {
-      setFieldError('email', error.response?.data || 'Login failed');
+      console.error('Login Error:', error.message);
+      setFieldError('email', error.message);
     }
     setSubmitting(false);
   };
@@ -81,6 +105,13 @@ const Login = () => {
                 >
                   {isSubmitting ? 'Signing in...' : 'Sign in'}
                 </button>
+
+                <div className="text-center text-sm mt-4">
+                  Don't have an account?{' '}
+                  <a href="/signup" className="text-blue-600 hover:underline">
+                    Sign up
+                  </a>
+                </div>
               </Form>
             )}
           </Formik>
