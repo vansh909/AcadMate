@@ -1,38 +1,23 @@
-const mappings = require('../models/subject-teacher-mapping.model');
-const userModel = require('../models/user.model');
-const studentModel = require('../models/student.model');
-exports.getStudentList = async (req, res) => {
+const Classes = require('../models/class.model');
+const Students = require('../models/student.model');
+
+
+exports.getStudentsList = async(req, res)=>{
+    const user = req.user;
+
     try {
-        console.log(req.user);
+        console.log(user);
+        if(user.role != 'teacher') return res.status(400).json({Message:"Not Authorized!"});
 
-        if (req.user.role !== 'teacher') {
-            return res.status(401).json("Only teachers are allowed.");
-        }
+        const myClass  = await Classes.findOne({class_teacher_id: user._id});
+        if(!myClass) return res.status(400).json({Message:"You have not been assigned a class"});
+        const studentsList = await Students.find({ class_id: myClass.id }).populate('student_id', 'name'); // only name field
 
-        const mapping = await mappings.findOne({ teacherId: req.user._id });
-        if (!mapping) {
-            return res.status(404).json("Teacher doesn't exist, check again.");
-        }
-
-        const classId = mapping.classId;
-        if (!classId) {
-            return res.status(404).json("No mapping for class.");
-        }
-
-        // Find students in the class
-        const students = await studentModel.find({ class_id: classId }).lean();
-        if (!students || students.length == 0) {
-            return res.status(200).json("No students found.");
-        }
-
-        // Find user details for the students
-        const findStudent = await userModel.find({
-            _id: { $in: students.map(s => s.student_id) }
-        }, "name email");
-
-        return res.status(200).json(findStudent);
+        console.log(studentsList)
+        if(!studentsList) return res.status(400).json({Message:`No Students in Class ${myClass.class_name}`});
+        return res.status(200).json({Message:"Students fetched Successfully!", students:studentsList});
     } catch (error) {
-        console.error("Error in getStudentList:", error);
-        return res.status(400).json(error);
+        console.log(error);
+        return res.status(500).json({Error:"Internal Server Error!"});
     }
-};
+}
