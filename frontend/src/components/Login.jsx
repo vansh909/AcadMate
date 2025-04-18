@@ -4,7 +4,6 @@ import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-
 import AdminDashboard from './AdminDashboard';
 
 <Routes>
@@ -32,35 +31,34 @@ const Login = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(values),
-        credentials: 'include',
+        credentials: 'include'
       });
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
       }
-      
-      const { role } = data;
-      
-      switch (role) {
-        case 'admin':
-          navigate('/AdminDashboard');
+
+      // Redirect based on user role
+      switch (data.role) {
+        case 'teacher':
+          navigate('/teacher-dashboard');
           break;
         case 'student':
-          navigate('/StudentDashboard');
+          navigate('/student-dashboard');
           break;
-        case 'teacher':
-          navigate('/TeacherDashboard');
+        case 'admin':
+          navigate('/admin-dashboard');
           break;
         default:
-          setFieldError('email', 'Invalid user role');
-      }      
+          throw new Error('Invalid user role');
+      }
     } catch (error) {
-      console.error('Login Error:', error.message);
       setFieldError('email', error.message);
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   return (

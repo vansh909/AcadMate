@@ -14,8 +14,7 @@ const TeacherForm = () => {
     phone_number: '',
     address: '',
     is_class_teacher: false,
-    qualifications: '',
-    classes_assigned: '',
+    qualifications: '', // Will be converted to array on submit
     subject_specialization: ''
   };
 
@@ -24,33 +23,55 @@ const TeacherForm = () => {
     email: Yup.string().email('Invalid email').required('Required'),
     password: Yup.string().min(6, 'Must be at least 6 characters').required('Required'),
     date_of_birth: Yup.date().required('Required'),
-    gender: Yup.string().required('Required'),
-    years_of_experience: Yup.number().required('Required'),
-    phone_number: Yup.string().required('Required'),
+    gender: Yup.string().oneOf(['male', 'female'], 'Invalid gender').required('Required'),
+    years_of_experience: Yup.number().positive('Must be positive').required('Required'),
+    phone_number: Yup.string()
+      .matches(/^\d+$/, 'Must be only digits')
+      .min(10, 'Must be at least 10 digits')
+      .required('Required'),
     address: Yup.string().required('Required'),
     qualifications: Yup.string().required('Required'),
-    classes_assigned: Yup.string().required('Required'),
     subject_specialization: Yup.string().required('Required')
   });
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
+      // Convert qualifications to array as expected by the backend
+      const formattedValues = {
+        ...values,
+        qualifications: values.qualifications.split(',').map(qual => qual.trim()),
+        phone_number: parseInt(values.phone_number), // Convert to number as per schema
+        years_of_experience: parseInt(values.years_of_experience), // Convert to number
+        role: 'teacher' // Ensure role is set
+      };
+
+      console.log('Submitting values:', formattedValues); // Debug log
+
       const response = await fetch('http://localhost:4000/user/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(formattedValues),
+        credentials: 'include',
       });
+
       if (!response.ok) {
-        throw new Error('Registration failed');
+        const errorData = await response.json();
+        console.error('Server error:', errorData);
+        throw new Error(errorData.Message || 'Registration failed');
       }
+
+      const data = await response.json();
+
       alert('Teacher registered successfully!');
       resetForm();
     } catch (error) {
+      console.error('Registration error:', error);
       alert(error.message || 'Registration failed');
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   return (

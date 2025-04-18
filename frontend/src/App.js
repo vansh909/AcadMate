@@ -9,9 +9,9 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/AdminDashboard" element={<AdminDashboard />} />
-        <Route path="/StudentDashboard" element={<StudentDashboard />} />
-        <Route path="/TeacherDashboard" element={<TeacherDashboard />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/student-dashboard" element={<StudentDashboard />} />
+        <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>

@@ -27,9 +27,9 @@ exports.signup = async (req, res) => {
         .status(401)
         .json("not authorized to register students and teachers");
     }
-    if (data.role != "student" && data.role != "teacher") {
-      return res.status(401).json("not authorized to register students");
-    }
+    // if (data.role != "student" && data.role != "teacher") {
+    //   return res.status(401).json("not authorized to register students");
+    // }
 
     if (!validator.isEmail(data.email)) {
       return res.status(400).json("email not valid");
