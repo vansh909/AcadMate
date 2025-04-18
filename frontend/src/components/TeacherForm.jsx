@@ -1,7 +1,6 @@
 import React from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import axios from 'axios';
 
 const TeacherForm = () => {
   const initialValues = {
@@ -36,11 +35,20 @@ const TeacherForm = () => {
 
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
-      const response = await axios.post('/user/signup', values);
+      const response = await fetch('http://localhost:4000/user/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      });
+      if (!response.ok) {
+        throw new Error('Registration failed');
+      }
       alert('Teacher registered successfully!');
       resetForm();
     } catch (error) {
-      alert(error.response?.data?.message || 'Registration failed');
+      alert(error.message || 'Registration failed');
     }
     setSubmitting(false);
   };
@@ -64,13 +72,112 @@ const TeacherForm = () => {
               <ErrorMessage name="name" component="div" className="text-red-500 text-sm mt-1" />
             </div>
 
-            {/* Add other fields similarly */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Email</label>
+              <Field
+                name="email"
+                type="email"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              <ErrorMessage name="email" component="div" className="text-red-500 text-sm mt-1" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Password</label>
+              <Field
+                name="password"
+                type="password"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              <ErrorMessage name="password" component="div" className="text-red-500 text-sm mt-1" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
+              <Field
+                name="date_of_birth"
+                type="date"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              <ErrorMessage name="date_of_birth" component="div" className="text-red-500 text-sm mt-1" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Gender</label>
+              <Field as="select" name="gender" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <option value="">Select</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </Field>
+              <ErrorMessage name="gender" component="div" className="text-red-500 text-sm mt-1" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Years of Experience</label>
+              <Field
+                name="years_of_experience"
+                type="number"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              <ErrorMessage name="years_of_experience" component="div" className="text-red-500 text-sm mt-1" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+              <Field
+                name="phone_number"
+                type="text"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              <ErrorMessage name="phone_number" component="div" className="text-red-500 text-sm mt-1" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Address</label>
+              <Field
+                name="address"
+                type="text"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              <ErrorMessage name="address" component="div" className="text-red-500 text-sm mt-1" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Qualifications</label>
+              <Field
+                name="qualifications"
+                type="text"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              <ErrorMessage name="qualifications" component="div" className="text-red-500 text-sm mt-1" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Classes Assigned</label>
+              <Field
+                name="classes_assigned"
+                type="text"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              <ErrorMessage name="classes_assigned" component="div" className="text-red-500 text-sm mt-1" />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Subject Specialization</label>
+              <Field
+                name="subject_specialization"
+                type="text"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              />
+              <ErrorMessage name="subject_specialization" component="div" className="text-red-500 text-sm mt-1" />
+            </div>
           </div>
 
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mt-6"
           >
             {isSubmitting ? 'Registering...' : 'Register Teacher'}
           </button>

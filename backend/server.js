@@ -4,6 +4,13 @@ const mongoose = require('mongoose');
 const app = express();
 require('dotenv').config();
 
+const cors = require('cors');
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true // allows cookies to be sent
+}));
+
+
 
 const cookieParser = require('cookie-parser');
 const userRoutes = require('./routes/user.routes');

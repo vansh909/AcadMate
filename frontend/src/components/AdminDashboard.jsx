@@ -5,41 +5,46 @@ import TeacherForm from './TeacherForm';
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('student');
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'student':
+        return <StudentForm />;
+      case 'teacher':
+        return <TeacherForm />;
+      default:
+        return <div>Select a tab</div>;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100 py-6">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
-        
-        <div className="bg-white shadow rounded-lg">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex">
-              <button
-                className={`${
-                  activeTab === 'student'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm`}
-                onClick={() => setActiveTab('student')}
-              >
-                Register Student
-              </button>
-              <button
-                className={`${
-                  activeTab === 'teacher'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                } w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm`}
-                onClick={() => setActiveTab('teacher')}
-              >
-                Register Teacher
-              </button>
-            </nav>
-          </div>
-          
-          <div className="p-6">
-            {activeTab === 'student' ? <StudentForm /> : <TeacherForm />}
-          </div>
+    <div className="min-h-screen bg-gray-100 py-10 px-4 flex justify-center items-center">
+      <div className="max-w-4xl w-full bg-white rounded-lg shadow-lg overflow-hidden p-8">
+        <h1 className="text-4xl font-bold text-center text-blue-600 mb-8">Admin Dashboard</h1>
+
+        <div className="flex border-b mb-8">
+          <button
+            onClick={() => setActiveTab('student')}
+            className={`w-1/2 py-3 text-lg font-semibold text-center transition duration-300 ${
+              activeTab === 'student'
+                ? 'border-b-4 border-blue-600 text-blue-600'
+                : 'text-gray-600 hover:text-blue-600'
+            }`}
+          >
+            Register Student
+          </button>
+          <button
+            onClick={() => setActiveTab('teacher')}
+            className={`w-1/2 py-3 text-lg font-semibold text-center transition duration-300 ${
+              activeTab === 'teacher'
+                ? 'border-b-4 border-blue-600 text-blue-600'
+                : 'text-gray-600 hover:text-blue-600'
+            }`}
+          >
+            Register Teacher
+          </button>
         </div>
+
+        <div className="p-6">{renderTabContent()}</div>
       </div>
     </div>
   );
