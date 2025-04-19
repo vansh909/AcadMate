@@ -1,5 +1,6 @@
 const Classes = require('../models/class.model');
 const Students = require('../models/student.model');
+const mappings = require('../models/subject-teacher-mapping.model');
 
 
 exports.getStudentsList = async(req, res)=>{
@@ -21,3 +22,26 @@ exports.getStudentsList = async(req, res)=>{
         return res.status(500).json({Error:"Internal Server Error!"});
     }
 }
+
+exports.getClassLists = async (req, res) => {
+    try {
+        const user = req.user;
+
+        if (user.role !== 'teacher') {
+            return res.status(400).json({ Message: "Not Authorized!" });
+        }
+
+        const classes = await mappings.find({ teacherId: user._id })
+        .populate('classId', 'class_name total_students')
+        .populate('subjectId', 'subjectName');;
+
+        if (!classes || classes.length === 0) {
+            return res.status(404).json({ Message: "No classes assigned to you." });
+        }
+
+        return res.status(200).json({ Message: "Classes fetched successfully!", classes });
+    } catch (error) {
+        console.error("Error fetching class lists:", error);
+        return res.status(500).json({ Error: "Internal Server Error!" });
+    }
+};
