@@ -1,6 +1,6 @@
 const Classes = require('../models/class.model');
 const Students = require('../models/student.model');
-
+const Teacher = require('../models/teacher.model');
 
 exports.getStudentsList = async(req, res)=>{
     const user = req.user;
@@ -18,6 +18,20 @@ exports.getStudentsList = async(req, res)=>{
         return res.status(200).json({Message:"Students fetched Successfully!", students:studentsList});
     } catch (error) {
         console.log(error);
+        return res.status(500).json({Error:"Internal Server Error!"});
+    }
+}
+
+
+exports.getTeacherProfile = async(req, res)=>{
+    const user = req.user;
+    try {
+        if(user.role !='teacher') return res.status(400).json({Message:"Not Authorized!"});
+        const teacherDetails = await Teacher.findOne({teacherId: user._id}).populate('teacherId', 'name email');
+        if(!teacherDetails) return res.status(400).json({Message:"No Teacher Found!"});
+        return res.status(200).json({Message:"Teacher Profile Fetched Successfully!", teacher:teacherDetails});
+    } catch (error) {
+        console.log(error); 
         return res.status(500).json({Error:"Internal Server Error!"});
     }
 }
