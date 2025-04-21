@@ -1,6 +1,5 @@
 const express= require('express');
-const {getStudentsList, getTeacherProfile} = require('../controllers/teacher.controller');
-const {getStudentsList, getClassLists} = require('../controllers/teacher.controller');
+const {getStudentsList, getClassLists, getTeacherProfile} = require('../controllers/teacher.controller');
 const {isAuthenticated} = require('../middlewares/auth.middleware')
 const router = express.Router();
 
