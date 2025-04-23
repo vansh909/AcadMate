@@ -3,7 +3,6 @@ const Students = require('../models/student.model');
 const Teacher = require('../models/teacher.model');
 const mappings = require('../models/subject-teacher-mapping.model');
 
-
 exports.getStudentsList = async(req, res)=>{
     const user = req.user;
 
@@ -59,3 +58,23 @@ exports.getClassLists = async (req, res) => {
         return res.status(500).json({ Error: "Internal Server Error!" });
     }
 };
+
+//multer 
+// controllers/uploadController.js
+
+exports.uploadFile = async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded.' });
+      }
+  
+      res.status(200).json({
+        message: 'File uploaded successfully',
+        file: req.file
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+  };
+  
