@@ -2,6 +2,7 @@ const Classes = require('../models/class.model');
 const Students = require('../models/student.model');
 const Teacher = require('../models/teacher.model');
 const mappings = require('../models/subject-teacher-mapping.model');
+const Attendance= require('../models/attendance.model')
 
 exports.getStudentsList = async(req, res)=>{
     const user = req.user;
@@ -78,3 +79,29 @@ exports.uploadFile = async (req, res) => {
     }
   };
   
+
+
+exports.addAttendace = async(req, res)=>{
+    const user = req.user;
+    const {className, date, attendance} = req.body;
+    try {
+       const IsClassTeacher = await Classes.findOne({class_teacher_id: user._id, class_name:className});
+       if(!IsClassTeacher) return res.status(400).json({Message:"You are not the class teacher!"}); 
+
+       for(let entry of attendance){
+        const newRecord = new Attendance({
+            classId: IsClassTeacher._id,
+            studentId: entry.studentId,
+            date: date,
+            status:entry.status
+        });
+
+        await newRecord.save();
+        return res.status(200).json({Message:"Attendance added successfully!"});
+       }
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({Error:"Internal Server Error!"});
+        
+    }
+}
