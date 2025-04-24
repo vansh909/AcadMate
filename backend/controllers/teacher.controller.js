@@ -85,23 +85,65 @@ exports.addAttendace = async(req, res)=>{
     const user = req.user;
     const {className, date, attendance} = req.body;
     try {
-       const IsClassTeacher = await Classes.findOne({class_teacher_id: user._id, class_name:className});
-       if(!IsClassTeacher) return res.status(400).json({Message:"You are not the class teacher!"}); 
+        const IsClassTeacher = await Classes.findOne({class_teacher_id: user._id, class_name:className});
+        if(!IsClassTeacher) return res.status(400).json({Message:"You are not the class teacher!"}); 
 
-       for(let entry of attendance){
-        const newRecord = new Attendance({
-            classId: IsClassTeacher._id,
-            studentId: entry.studentId,
-            date: date,
-            status:entry.status
+        // Parse and format the date properly
+        const [day, month, year] = date.split('-');
+        const formattedDate = new Date(
+            2000 + parseInt(year),
+            parseInt(month) - 1,
+            parseInt(day)
+        );
+
+        // Validate if the date is valid
+        if (isNaN(formattedDate.getTime())) {
+            return res.status(400).json({Message: "Invalid date format. Please use DD-MM-YY format"});
+        }
+
+        // Set time to start and end of day for comparison
+        const startOfDay = new Date(formattedDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(formattedDate);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        // Check for duplicate attendance entries
+        for(let entry of attendance){
+            const existingAttendance = await Attendance.findOne({
+                classId: IsClassTeacher._id,
+                studentId: entry.studentId,
+                date: {
+                    $gte: startOfDay,
+                    $lte: endOfDay
+                }
+            });
+
+            if (existingAttendance) {
+                return res.status(400).json({
+                    Message: `Attendance already marked for student ID ${entry.studentId} on ${date}`
+                });
+            }
+        }
+
+        // If no duplicates found, add new attendance records
+        const attendanceRecords = await Promise.all(
+            attendance.map(entry => {
+                const newRecord = new Attendance({
+                    classId: IsClassTeacher._id,
+                    studentId: entry.studentId,
+                    date: formattedDate,
+                    status: entry.status
+                });
+                return newRecord.save();
+            })
+        );
+        
+        return res.status(200).json({
+            Message: "Attendance added successfully!",
+            records: attendanceRecords
         });
-
-        await newRecord.save();
-        return res.status(200).json({Message:"Attendance added successfully!"});
-       }
     } catch (error) {
         console.log(error);
-        return res.status(500).json({Error:"Internal Server Error!"});
-        
+        return res.status(500).json({Error: "Internal Server Error!"});
     }
 }
