@@ -17,7 +17,6 @@ const userRoutes = require('./routes/user.routes');
 const adminRoutes = require('./routes/admin.routes');
 const refreshTokenRoutes  = require('./routes/auth.routes');
 const teacherRoutes = require('./routes/teacher.routes');
-const uploadRoute = require('./routes/teacher.routes');
 
 app.use(cookieParser());
 app.use(express.json());
@@ -28,7 +27,6 @@ app.use('/admin', adminRoutes)
 app.use("/", refreshTokenRoutes)
 app.use("/teacher", teacherRoutes)
 app.use('/public', express.static('public'));
-app.use('/upload', uploadRoute);
 
 
 
