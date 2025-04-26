@@ -17,6 +17,7 @@ const TeacherDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // First fetch profile
         const profileResponse = await fetch('http://localhost:4000/teacher/profile', {
           credentials: 'include',
         });
@@ -32,18 +33,27 @@ const TeacherDashboard = () => {
         const profileData = await profileResponse.json();
         setTeacherData(profileData.teacher);
 
-        const classesResponse = await fetch('http://localhost:4000/teacher/ClassesList', {
-          credentials: 'include',
-        });
+        // Then try to fetch classes
+        try {
+          const classesResponse = await fetch('http://localhost:4000/teacher/ClassesList', {
+            credentials: 'include',
+          });
 
-        if (!classesResponse.ok) {
-          throw new Error('Failed to fetch classes');
+          if (!classesResponse.ok) {
+            // Don't throw error, just set empty classes list
+            setClassesList([]);
+            return;
+          }
+
+          const classesData = await classesResponse.json();
+          setClassesList(classesData.classes || []);
+        } catch (classesError) {
+          // If classes fetch fails, don't fail the whole component
+          console.warn('Could not fetch classes:', classesError);
+          setClassesList([]);
         }
 
-        const classesData = await classesResponse.json();
-        setClassesList(classesData.classes || []);
       } catch (err) {
-        console.error('Error fetching data:', err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -116,37 +126,71 @@ const TeacherDashboard = () => {
     </div>
   );
 
-  const renderClasses = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {classesList.map((classItem, index) => (
-        <div
-          key={index}
-          onClick={() => {
-            if (teacherData?.is_class_teacher) {
-              fetchStudentsList();
-            }
-          }}
-          className={`bg-white shadow-lg rounded-lg p-6 border border-gray-200 
-            ${teacherData?.is_class_teacher ? 'cursor-pointer hover:shadow-xl transition-shadow' : ''}`}
-        >
-          <h3 className="text-xl font-semibold text-gray-800 mb-2">
-            Class: {classItem.classId.class_name}
-          </h3>
-          <p className="text-gray-600">
-            <strong>Subject:</strong> {classItem.subjectId.subjectName}
-          </p>
-          <p className="text-gray-600">
-            <strong>Total Students:</strong> {classItem.classId.total_students}
-          </p>
-          {teacherData?.is_class_teacher && (
-            <p className="text-sm text-blue-600 mt-2">
-              Click to view students list
+  const renderClasses = () => {
+    if (!classesList || classesList.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center bg-white rounded-lg shadow-lg p-8 min-h-[300px]">
+          <div className="flex flex-col items-center text-center">
+            <svg 
+              className="w-16 h-16 text-blue-500 mb-4" 
+              fill="none" 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth="2" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>
+            </svg>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              Welcome to AcadMate!
+            </h3>
+            <p className="text-gray-600 max-w-md mb-4">
+              Your teaching journey is about to begin. The administrator will assign your classes soon.
             </p>
-          )}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-2">
+              <p className="text-sm text-blue-700">
+                <span className="font-medium">Note:</span> Once classes are assigned, they will appear here automatically.
+                No need to refresh the page.
+              </p>
+            </div>
+          </div>
         </div>
-      ))}
-    </div>
-  );
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {classesList.map((classItem, index) => (
+          <div
+            key={index}
+            onClick={() => {
+              if (teacherData?.is_class_teacher) {
+                fetchStudentsList();
+              }
+            }}
+            className={`bg-white shadow-lg rounded-lg p-6 border border-gray-200 
+              ${teacherData?.is_class_teacher ? 'cursor-pointer hover:shadow-xl transition-shadow' : ''}`}
+          >
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              Class: {classItem.classId.class_name}
+            </h3>
+            <p className="text-gray-600">
+              <strong>Subject:</strong> {classItem.subjectId.subjectName}
+            </p>
+            <p className="text-gray-600">
+              <strong>Total Students:</strong> {classItem.classId.total_students}
+            </p>
+            {teacherData?.is_class_teacher && (
+              <p className="text-sm text-blue-600 mt-2">
+                Click to view students list
+              </p>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   // Add renderProfile function
   const renderProfile = () => (
@@ -243,8 +287,13 @@ const TeacherDashboard = () => {
               onClick={() => {
                 setShowProfile(false);
                 setShowAttendance(false);
+                setShowStudentsList(false);
               }}
-              className={`px-4 py-2 rounded-md ${!showProfile && !showAttendance ? 'bg-white text-blue-600' : 'text-white hover:bg-blue-700'}`}
+              className={`px-4 py-2 rounded-md ${
+                !showProfile && !showAttendance && !showStudentsList 
+                  ? 'bg-white text-blue-600' 
+                  : 'text-white hover:bg-blue-700'
+              }`}
             >
               Classes
             </button>
@@ -252,18 +301,25 @@ const TeacherDashboard = () => {
               onClick={() => {
                 setShowProfile(true);
                 setShowAttendance(false);
+                setShowStudentsList(false);
               }}
-              className={`px-4 py-2 rounded-md ${showProfile ? 'bg-white text-blue-600' : 'text-white hover:bg-blue-700'}`}
+              className={`px-4 py-2 rounded-md ${
+                showProfile ? 'bg-white text-blue-600' : 'text-white hover:bg-blue-700'
+              }`}
             >
               Profile
             </button>
+            {/* Only render Attendance button if teacher is a class teacher */}
             {teacherData?.is_class_teacher && (
               <button
                 onClick={() => {
                   setShowProfile(false);
                   setShowAttendance(true);
+                  setShowStudentsList(false);
                 }}
-                className={`px-4 py-2 rounded-md ${showAttendance ? 'bg-white text-blue-600' : 'text-white hover:bg-blue-700'}`}
+                className={`px-4 py-2 rounded-md ${
+                  showAttendance ? 'bg-white text-blue-600' : 'text-white hover:bg-blue-700'
+                }`}
               >
                 Attendance
               </button>

@@ -135,3 +135,47 @@ exports.classes = async (req, res) => {
     return res.status(400).json(err);
   }
 };
+
+
+
+exports.getClasses = async (req, res) => {
+  const user = req.user;
+  try {
+    if (user.role != "admin")
+      return res.status(401).json({ Message: "Not Authorized to perform action" });
+    const classes = await Class.find();
+    if (!classes) return res.status(400).json({ Message: "No Classes Found!" });
+    return res.status(200).json({ Message: "Classes Fetched", classes });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ Error: "Internal Server Error!" });
+  }
+}
+
+exports.getTeachers = async (req, res) => {
+  const user = req.user;
+  try {
+    if (user.role != "admin")
+      return res.status(401).json({ Message: "Not Authorized to perform action" });
+    const teachers = await teacherModel.find().populate("teacherId", "name email");
+    if (!teachers) return res.status(400).json({ Message: "No Teachers Found!" });
+    return res.status(200).json({ Message: "Teachers Fetched", teachers });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ Error: "Internal Server Error!" });
+  }
+};
+
+exports.getSubjects = async (req, res) => {
+  const user = req.user;
+  try {
+    if (user.role != "admin")
+      return res.status(401).json({ Message: "Not Authorized to perform action" });
+    const subjects = await Subject.find();
+    if (!subjects) return res.status(400).json({ Message: "No Subjects Found!" });
+    return res.status(200).json({ Message: "Subjects Fetched", subjects });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ Error: "Internal Server Error!" });
+  }
+}
