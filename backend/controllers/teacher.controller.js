@@ -3,8 +3,7 @@ const Students = require('../models/student.model');
 const Teacher = require('../models/teacher.model');
 const mappings = require('../models/subject-teacher-mapping.model');
 const Attendance= require('../models/attendance.model');
-const cloudinary = require('../config/cloudinary');
-const multer = require('../middlewares/multer');
+
 
 exports.getStudentsList = async(req, res)=>{
     const user = req.user;
@@ -62,22 +61,6 @@ exports.getClassLists = async (req, res) => {
     }
 };
 
-//multer + cloudinary
-exports.uploadFile = async (req, res) => {
-    console.log("controller hit!");
-    try {
-        const result = await cloudinary.uploader.upload(req.file.path); 
-        console.log(result);
-        res.status(200).json({
-            success: true,
-            message: "File uploaded successfully",
-            data: result, 
-        });
-    } catch (error) {
-        console.error("Error uploading file:", error);
-        res.status(500).json({ error: "Internal Server Error" });
-    }
-};
 exports.addAttendace = async(req, res)=>{
     const user = req.user;
     const {className, date, attendance} = req.body;

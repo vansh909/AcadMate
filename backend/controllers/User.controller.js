@@ -6,7 +6,6 @@ const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const nodemailer = require("nodemailer");
 const Subject = require("../models/subject.model");
-const refreshtoken = require("./auth.controller");
 const Class = require("../models/class.model");
 
 const transporter = nodemailer.createTransport({
