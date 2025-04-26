@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import StudentForm from './StudentForm';
 import TeacherForm from './TeacherForm';
+import TeacherMapping from './TeacherMapping';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('student');
@@ -11,6 +12,8 @@ const AdminDashboard = () => {
         return <StudentForm />;
       case 'teacher':
         return <TeacherForm />;
+      case 'mapping':
+        return <TeacherMapping />;
       default:
         return <div>Select a tab</div>;
     }
@@ -24,7 +27,7 @@ const AdminDashboard = () => {
         <div className="flex border-b mb-8">
           <button
             onClick={() => setActiveTab('student')}
-            className={`w-1/2 py-3 text-lg font-semibold text-center transition duration-300 ${
+            className={`w-1/3 py-3 text-lg font-semibold text-center transition duration-300 ${
               activeTab === 'student'
                 ? 'border-b-4 border-blue-600 text-blue-600'
                 : 'text-gray-600 hover:text-blue-600'
@@ -34,13 +37,23 @@ const AdminDashboard = () => {
           </button>
           <button
             onClick={() => setActiveTab('teacher')}
-            className={`w-1/2 py-3 text-lg font-semibold text-center transition duration-300 ${
+            className={`w-1/3 py-3 text-lg font-semibold text-center transition duration-300 ${
               activeTab === 'teacher'
                 ? 'border-b-4 border-blue-600 text-blue-600'
                 : 'text-gray-600 hover:text-blue-600'
             }`}
           >
             Register Teacher
+          </button>
+          <button
+            onClick={() => setActiveTab('mapping')}
+            className={`w-1/3 py-3 text-lg font-semibold text-center transition duration-300 ${
+              activeTab === 'mapping'
+                ? 'border-b-4 border-blue-600 text-blue-600'
+                : 'text-gray-600 hover:text-blue-600'
+            }`}
+          >
+            Assign Classes
           </button>
         </div>
 
