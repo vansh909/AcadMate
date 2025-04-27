@@ -324,6 +324,12 @@ const TeacherDashboard = () => {
                 Attendance
               </button>
             )}
+            <button
+            onClick={() => navigate('/assignment-dashboard')}
+            className="px-4 py-2 rounded-md text-white hover:bg-blue-700"
+            >
+            Assignments
+          </button>
           </div>
         </div>
       </nav>
