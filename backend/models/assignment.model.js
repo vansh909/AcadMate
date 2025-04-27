@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const assignmentSchema = new mongoose.Schema({
+    assignmentName:{
+        type:String,
+        required:true
+    },
     teacherId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
@@ -15,7 +19,7 @@ const assignmentSchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    dateEnd:{
+    endDate:{
         type:Date,
         required:true
     }

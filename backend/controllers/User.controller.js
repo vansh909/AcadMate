@@ -95,7 +95,7 @@ exports.signup = async (req, res) => {
             
             Make sure to keep this information safe. If you have any questions or need assistance, feel free to reach out.
             
-            Let’s make this journey amazing together! ✨
+            Let's make this journey amazing together! ✨
             
             Best regards,  
             The AcadMate Team`,
