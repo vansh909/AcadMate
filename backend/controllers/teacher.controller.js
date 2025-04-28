@@ -3,6 +3,7 @@ const Students = require('../models/student.model');
 const Teacher = require('../models/teacher.model');
 const mappings = require('../models/subject-teacher-mapping.model');
 const Attendance= require('../models/attendance.model');
+const circulars= require('../models/circulars.model');
 
 
 exports.getStudentsList = async(req, res)=>{
@@ -125,5 +126,18 @@ exports.addAttendace = async(req, res)=>{
     } catch (error) {
         console.log(error);
         return res.status(500).json({Error: "Internal Server Error!"});
+    }
+}
+
+exports.getCirculars = async(req,res)=>{
+    try{
+        const user = req.user.role;
+        if(user !== 'teacher') return res.status(400).json("not allowed to access the circulars");
+        const result = await circulars.find(
+            {circularFor: {$in : ['teacher', 'both']}}
+        )
+        return res.status(200).json(result)
+    }catch(err){
+        return res.status(500).json(err);
     }
 }
