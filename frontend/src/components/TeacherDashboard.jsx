@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AttendanceForm from './AttendanceForm'; // Add this import
+import AttendanceForm from './AttendanceForm';
 
 const TeacherDashboard = () => {
   const [teacherData, setTeacherData] = useState(null);
@@ -9,7 +9,14 @@ const TeacherDashboard = () => {
   const [error, setError] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
   const [showAttendance, setShowAttendance] = useState(false);
-  const [selectedClass, setSelectedClass] = useState(null);
+  const [showCirculars, setShowCirculars] = useState(false);
+  const [showAssignments, setShowAssignments] = useState(false);
+  const [circulars, setCirculars] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  const [assignmentName, setAssignmentName] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [file, setFile] = useState(null);
+  const [selectedClass, setSelectedClass] = useState('');
   const [studentsList, setStudentsList] = useState([]);
   const [showStudentsList, setShowStudentsList] = useState(false);
   const navigate = useNavigate();
@@ -17,7 +24,7 @@ const TeacherDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // First fetch profile
+        // Fetch teacher profile
         const profileResponse = await fetch('http://localhost:4000/teacher/profile', {
           credentials: 'include',
         });
@@ -33,26 +40,17 @@ const TeacherDashboard = () => {
         const profileData = await profileResponse.json();
         setTeacherData(profileData.teacher);
 
-        // Then try to fetch classes
-        try {
-          const classesResponse = await fetch('http://localhost:4000/teacher/ClassesList', {
-            credentials: 'include',
-          });
+        // Fetch classes
+        const classesResponse = await fetch('http://localhost:4000/teacher/ClassesList', {
+          credentials: 'include',
+        });
 
-          if (!classesResponse.ok) {
-            // Don't throw error, just set empty classes list
-            setClassesList([]);
-            return;
-          }
-
-          const classesData = await classesResponse.json();
-          setClassesList(classesData.classes || []);
-        } catch (classesError) {
-          // If classes fetch fails, don't fail the whole component
-          console.warn('Could not fetch classes:', classesError);
-          setClassesList([]);
+        if (!classesResponse.ok) {
+          throw new Error('Failed to fetch classes');
         }
 
+        const classesData = await classesResponse.json();
+        setClassesList(classesData.classes || []);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -61,7 +59,164 @@ const TeacherDashboard = () => {
     };
 
     fetchData();
+    fetchAssignments(); // Fetch assignments on component mount
   }, [navigate]);
+
+  const fetchAssignments = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/assignment/assignmentList', {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch assignments');
+      }
+
+      const data = await response.json();
+      setAssignments(data.assignments || []);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedClass) {
+      alert('Please select a class before submitting.');
+      return;
+    }
+
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append('assignmentName', assignmentName);
+    formData.append('endDate', endDate);
+    formData.append('file', file);
+    formData.append('class_name', selectedClass);
+
+    try {
+      const response = await fetch('http://localhost:4000/assignment/addAssignment', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to upload assignment');
+      }
+
+      alert('Assignment uploaded successfully!');
+      setAssignmentName('');
+      setEndDate('');
+      setFile(null);
+      setSelectedClass('');
+      fetchAssignments(); // Refresh the assignments list
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderAssignments = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {/* Assignment List */}
+      <div className="bg-white p-6 rounded-lg shadow-lg">
+        <h2 className="text-xl font-bold mb-4">Uploaded Assignments</h2>
+        {assignments.length > 0 ? (
+          <ul className="space-y-4">
+            {assignments.map((assignment) => (
+              <li key={assignment._id} className="p-4 border rounded-md">
+                <p className="font-medium">Name: {assignment.name}</p>
+                <p>End Date: {assignment.endDate}</p>
+                <p>Class: {assignment.classAssigned?.class_name || 'N/A'}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-600">No assignments uploaded yet.</p>
+        )}
+      </div>
+
+      {/* Assignment Form */}
+      <div className="bg-white p-6 rounded-lg shadow-lg">
+        <h1 className="text-2xl font-bold mb-4">Upload Assignment</h1>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Assignment Name
+            </label>
+            <input
+              type="text"
+              value={assignmentName}
+              onChange={(e) => setAssignmentName(e.target.value)}
+              className="w-full p-2 border rounded-md"
+              placeholder="Enter assignment name"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              End Date
+            </label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full p-2 border rounded-md"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Upload File
+            </label>
+            <input
+              type="file"
+              onChange={handleFileChange}
+              className="w-full p-2 border rounded-md"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Select Class
+            </label>
+            <select
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+              className="w-full p-2 border rounded-md"
+              required
+            >
+              <option value="" disabled>
+                Select a class
+              </option>
+              {classesList.map((classItem) => (
+                <option key={classItem.classId._id} value={classItem.classId.class_name}>
+                  {classItem.classId.class_name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            type="submit"
+            className={`w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 ${
+              loading ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            disabled={loading}
+          >
+            {loading ? 'Uploading...' : 'Upload Assignment'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
 
   const fetchStudentsList = async () => {
     try {
@@ -81,6 +236,53 @@ const TeacherDashboard = () => {
       setError(err.message);
     }
   };
+
+  const fetchCirculars = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/teacher/get-circulars', {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch circulars');
+      }
+
+      const data = await response.json();
+      setCirculars(data || []);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const renderCirculars = () => (
+    <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+      <div className="px-4 py-5 sm:px-6">
+        <h3 className="text-lg leading-6 font-medium text-gray-900">Circulars</h3>
+      </div>
+      <div className="border-t border-gray-200">
+        {circulars.length > 0 ? (
+          <ul className="divide-y divide-gray-200">
+            {circulars.map((circular, index) => (
+              <li key={index} className="px-4 py-4 sm:px-6">
+                <h4 className="text-sm font-medium text-gray-900">{circular.title}</h4>
+                <p className="text-sm text-gray-600">For: {circular.circularFor}</p>
+                <a
+                  href={circular.circularUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  View Circular
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="text-center py-4">No circulars available</div>
+        )}
+      </div>
+    </div>
+  );
 
   const renderStudentsList = () => (
     <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -287,11 +489,13 @@ const TeacherDashboard = () => {
               onClick={() => {
                 setShowProfile(false);
                 setShowAttendance(false);
+                setShowCirculars(false);
+                setShowAssignments(false);
                 setShowStudentsList(false);
               }}
               className={`px-4 py-2 rounded-md ${
-                !showProfile && !showAttendance && !showStudentsList 
-                  ? 'bg-white text-blue-600' 
+                !showProfile && !showAttendance && !showCirculars && !showAssignments && !showStudentsList
+                  ? 'bg-white text-blue-600'
                   : 'text-white hover:bg-blue-700'
               }`}
             >
@@ -301,6 +505,8 @@ const TeacherDashboard = () => {
               onClick={() => {
                 setShowProfile(true);
                 setShowAttendance(false);
+                setShowCirculars(false);
+                setShowAssignments(false);
                 setShowStudentsList(false);
               }}
               className={`px-4 py-2 rounded-md ${
@@ -309,12 +515,13 @@ const TeacherDashboard = () => {
             >
               Profile
             </button>
-            {/* Only render Attendance button if teacher is a class teacher */}
             {teacherData?.is_class_teacher && (
               <button
                 onClick={() => {
                   setShowProfile(false);
                   setShowAttendance(true);
+                  setShowCirculars(false);
+                  setShowAssignments(false);
                   setShowStudentsList(false);
                 }}
                 className={`px-4 py-2 rounded-md ${
@@ -325,11 +532,34 @@ const TeacherDashboard = () => {
               </button>
             )}
             <button
-            onClick={() => navigate('/assignment-dashboard')}
-            className="px-4 py-2 rounded-md text-white hover:bg-blue-700"
+              onClick={() => {
+                setShowProfile(false);
+                setShowAttendance(false);
+                setShowCirculars(true);
+                setShowAssignments(false);
+                setShowStudentsList(false);
+                fetchCirculars();
+              }}
+              className={`px-4 py-2 rounded-md ${
+                showCirculars ? 'bg-white text-blue-600' : 'text-white hover:bg-blue-700'
+              }`}
             >
-            Assignments
-          </button>
+              Circulars
+            </button>
+            <button
+              onClick={() => {
+                setShowProfile(false);
+                setShowAttendance(false);
+                setShowCirculars(false);
+                setShowAssignments(true);
+                setShowStudentsList(false);
+              }}
+              className={`px-4 py-2 rounded-md ${
+                showAssignments ? 'bg-white text-blue-600' : 'text-white hover:bg-blue-700'
+              }`}
+            >
+              Assignments
+            </button>
           </div>
         </div>
       </nav>
@@ -343,6 +573,10 @@ const TeacherDashboard = () => {
             </>
           ) : showAttendance ? (
             <AttendanceForm teacherData={teacherData} />
+          ) : showCirculars ? (
+            renderCirculars()
+          ) : showAssignments ? (
+            renderAssignments()
           ) : showStudentsList ? (
             renderStudentsList()
           ) : (
