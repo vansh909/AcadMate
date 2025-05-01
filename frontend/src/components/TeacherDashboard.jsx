@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AttendanceForm from './AttendanceForm';
+import AttendanceForm from './AttendanceForm'; // Add this import
 
 const TeacherDashboard = () => {
   const [teacherData, setTeacherData] = useState(null);
@@ -9,14 +9,7 @@ const TeacherDashboard = () => {
   const [error, setError] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
   const [showAttendance, setShowAttendance] = useState(false);
-  const [showCirculars, setShowCirculars] = useState(false);
-  const [showAssignments, setShowAssignments] = useState(false);
-  const [circulars, setCirculars] = useState([]);
-  const [assignments, setAssignments] = useState([]);
-  const [assignmentName, setAssignmentName] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [file, setFile] = useState(null);
-  const [selectedClass, setSelectedClass] = useState('');
+  const [selectedClass, setSelectedClass] = useState(null);
   const [studentsList, setStudentsList] = useState([]);
   const [showStudentsList, setShowStudentsList] = useState(false);
   const navigate = useNavigate();
@@ -24,7 +17,7 @@ const TeacherDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Fetch teacher profile
+        // First fetch profile
         const profileResponse = await fetch('http://localhost:4000/teacher/profile', {
           credentials: 'include',
         });
@@ -40,17 +33,26 @@ const TeacherDashboard = () => {
         const profileData = await profileResponse.json();
         setTeacherData(profileData.teacher);
 
-        // Fetch classes
-        const classesResponse = await fetch('http://localhost:4000/teacher/ClassesList', {
-          credentials: 'include',
-        });
+        // Then try to fetch classes
+        try {
+          const classesResponse = await fetch('http://localhost:4000/teacher/ClassesList', {
+            credentials: 'include',
+          });
 
-        if (!classesResponse.ok) {
-          throw new Error('Failed to fetch classes');
+          if (!classesResponse.ok) {
+            // Don't throw error, just set empty classes list
+            setClassesList([]);
+            return;
+          }
+
+          const classesData = await classesResponse.json();
+          setClassesList(classesData.classes || []);
+        } catch (classesError) {
+          // If classes fetch fails, don't fail the whole component
+          console.warn('Could not fetch classes:', classesError);
+          setClassesList([]);
         }
 
-        const classesData = await classesResponse.json();
-        setClassesList(classesData.classes || []);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -59,164 +61,7 @@ const TeacherDashboard = () => {
     };
 
     fetchData();
-    fetchAssignments(); // Fetch assignments on component mount
   }, [navigate]);
-
-  const fetchAssignments = async () => {
-    try {
-      const response = await fetch('http://localhost:4000/assignment/assignmentList', {
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch assignments');
-      }
-
-      const data = await response.json();
-      setAssignments(data.assignments || []);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!selectedClass) {
-      alert('Please select a class before submitting.');
-      return;
-    }
-
-    setLoading(true);
-
-    const formData = new FormData();
-    formData.append('assignmentName', assignmentName);
-    formData.append('endDate', endDate);
-    formData.append('file', file);
-    formData.append('class_name', selectedClass);
-
-    try {
-      const response = await fetch('http://localhost:4000/assignment/addAssignment', {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to upload assignment');
-      }
-
-      alert('Assignment uploaded successfully!');
-      setAssignmentName('');
-      setEndDate('');
-      setFile(null);
-      setSelectedClass('');
-      fetchAssignments(); // Refresh the assignments list
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const renderAssignments = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      {/* Assignment List */}
-      <div className="bg-white p-6 rounded-lg shadow-lg">
-        <h2 className="text-xl font-bold mb-4">Uploaded Assignments</h2>
-        {assignments.length > 0 ? (
-          <ul className="space-y-4">
-            {assignments.map((assignment) => (
-              <li key={assignment._id} className="p-4 border rounded-md">
-                <p className="font-medium">Name: {assignment.name}</p>
-                <p>End Date: {assignment.endDate}</p>
-                <p>Class: {assignment.classAssigned?.class_name || 'N/A'}</p>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-600">No assignments uploaded yet.</p>
-        )}
-      </div>
-
-      {/* Assignment Form */}
-      <div className="bg-white p-6 rounded-lg shadow-lg">
-        <h1 className="text-2xl font-bold mb-4">Upload Assignment</h1>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Assignment Name
-            </label>
-            <input
-              type="text"
-              value={assignmentName}
-              onChange={(e) => setAssignmentName(e.target.value)}
-              className="w-full p-2 border rounded-md"
-              placeholder="Enter assignment name"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              End Date
-            </label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="w-full p-2 border rounded-md"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Upload File
-            </label>
-            <input
-              type="file"
-              onChange={handleFileChange}
-              className="w-full p-2 border rounded-md"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Class
-            </label>
-            <select
-              value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
-              className="w-full p-2 border rounded-md"
-              required
-            >
-              <option value="" disabled>
-                Select a class
-              </option>
-              {classesList.map((classItem) => (
-                <option key={classItem.classId._id} value={classItem.classId.class_name}>
-                  {classItem.classId.class_name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <button
-            type="submit"
-            className={`w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 ${
-              loading ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-            disabled={loading}
-          >
-            {loading ? 'Uploading...' : 'Upload Assignment'}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
 
   const fetchStudentsList = async () => {
     try {
@@ -236,53 +81,6 @@ const TeacherDashboard = () => {
       setError(err.message);
     }
   };
-
-  const fetchCirculars = async () => {
-    try {
-      const response = await fetch('http://localhost:4000/teacher/get-circulars', {
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch circulars');
-      }
-
-      const data = await response.json();
-      setCirculars(data || []);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const renderCirculars = () => (
-    <div className="bg-white shadow overflow-hidden sm:rounded-lg">
-      <div className="px-4 py-5 sm:px-6">
-        <h3 className="text-lg leading-6 font-medium text-gray-900">Circulars</h3>
-      </div>
-      <div className="border-t border-gray-200">
-        {circulars.length > 0 ? (
-          <ul className="divide-y divide-gray-200">
-            {circulars.map((circular, index) => (
-              <li key={index} className="px-4 py-4 sm:px-6">
-                <h4 className="text-sm font-medium text-gray-900">{circular.title}</h4>
-                <p className="text-sm text-gray-600">For: {circular.circularFor}</p>
-                <a
-                  href={circular.circularUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline"
-                >
-                  View Circular
-                </a>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="text-center py-4">No circulars available</div>
-        )}
-      </div>
-    </div>
-  );
 
   const renderStudentsList = () => (
     <div className="bg-white shadow overflow-hidden sm:rounded-lg">
@@ -480,115 +278,137 @@ const TeacherDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <nav className="bg-blue-600 text-white py-4 px-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Teacher Dashboard</h1>
-          <div className="space-x-4">
-            <button
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+      {/* Modern Navigation */}
+      <nav className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-6 px-8 shadow-xl">
+        <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center">
+          <div className="flex items-center space-x-3 mb-4 md:mb-0">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+            <h1 className="text-2xl font-bold tracking-wide">Teacher Dashboard</h1>
+          </div>
+          
+          <div className="flex flex-wrap gap-3">
+            <NavButton 
+              active={!showProfile && !showAttendance && !showStudentsList}
               onClick={() => {
                 setShowProfile(false);
                 setShowAttendance(false);
-                setShowCirculars(false);
-                setShowAssignments(false);
                 setShowStudentsList(false);
               }}
-              className={`px-4 py-2 rounded-md ${
-                !showProfile && !showAttendance && !showCirculars && !showAssignments && !showStudentsList
-                  ? 'bg-white text-blue-600'
-                  : 'text-white hover:bg-blue-700'
-              }`}
             >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+              </svg>
               Classes
-            </button>
-            <button
+            </NavButton>
+
+            <NavButton 
+              active={showProfile}
               onClick={() => {
                 setShowProfile(true);
                 setShowAttendance(false);
-                setShowCirculars(false);
-                setShowAssignments(false);
                 setShowStudentsList(false);
               }}
-              className={`px-4 py-2 rounded-md ${
-                showProfile ? 'bg-white text-blue-600' : 'text-white hover:bg-blue-700'
-              }`}
             >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
               Profile
-            </button>
+            </NavButton>
+
             {teacherData?.is_class_teacher && (
-              <button
+              <NavButton 
+                active={showAttendance}
                 onClick={() => {
                   setShowProfile(false);
                   setShowAttendance(true);
-                  setShowCirculars(false);
-                  setShowAssignments(false);
                   setShowStudentsList(false);
                 }}
-                className={`px-4 py-2 rounded-md ${
-                  showAttendance ? 'bg-white text-blue-600' : 'text-white hover:bg-blue-700'
-                }`}
               >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
                 Attendance
-              </button>
+              </NavButton>
             )}
-            <button
-              onClick={() => {
-                setShowProfile(false);
-                setShowAttendance(false);
-                setShowCirculars(true);
-                setShowAssignments(false);
-                setShowStudentsList(false);
-                fetchCirculars();
-              }}
-              className={`px-4 py-2 rounded-md ${
-                showCirculars ? 'bg-white text-blue-600' : 'text-white hover:bg-blue-700'
-              }`}
-            >
-              Circulars
-            </button>
-            <button
-              onClick={() => {
-                setShowProfile(false);
-                setShowAttendance(false);
-                setShowCirculars(false);
-                setShowAssignments(true);
-                setShowStudentsList(false);
-              }}
-              className={`px-4 py-2 rounded-md ${
-                showAssignments ? 'bg-white text-blue-600' : 'text-white hover:bg-blue-700'
-              }`}
-            >
+
+            <NavButton onClick={() => navigate('/assignment-dashboard')}>
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
               Assignments
-            </button>
+            </NavButton>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <div className="bg-white/60 backdrop-blur-sm rounded-xl shadow-xl p-6">
           {showProfile ? (
-            <>
-              <h2 className="text-2xl font-bold mb-6">Teacher Profile</h2>
+            <div className="space-y-6">
+              <div className="flex items-center mb-6">
+                <svg className="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <h2 className="text-3xl font-bold text-gray-900">Teacher Profile</h2>
+              </div>
               {renderProfile()}
-            </>
+            </div>
           ) : showAttendance ? (
             <AttendanceForm teacherData={teacherData} />
-          ) : showCirculars ? (
-            renderCirculars()
-          ) : showAssignments ? (
-            renderAssignments()
           ) : showStudentsList ? (
-            renderStudentsList()
+            <div className="space-y-6">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center">
+                  <svg className="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                  <h2 className="text-3xl font-bold text-gray-900">Students List</h2>
+                </div>
+                <button
+                  onClick={() => setShowStudentsList(false)}
+                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  Back to Classes
+                </button>
+              </div>
+              {renderStudentsList()}
+            </div>
           ) : (
-            <>
-              <h2 className="text-2xl font-bold mb-6">Classes You Teach</h2>
+            <div className="space-y-6">
+              <div className="flex items-center mb-6">
+                <svg className="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+                <h2 className="text-3xl font-bold text-gray-900">Your Classes</h2>
+              </div>
               {renderClasses()}
-            </>
+            </div>
           )}
         </div>
       </div>
     </div>
   );
 };
+
+// Add this NavButton component at the top of your file
+const NavButton = ({ children, active, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`flex items-center px-4 py-2 rounded-lg transition-all duration-300 ${
+      active 
+        ? 'bg-white text-blue-600 shadow-lg transform scale-105' 
+        : 'text-white hover:bg-white/10'
+    }`}
+  >
+    {children}
+  </button>
+);
 
 export default TeacherDashboard;
