@@ -18,6 +18,7 @@ const adminRoutes = require('./routes/admin.routes');
 const refreshTokenRoutes  = require('./routes/auth.routes');
 const teacherRoutes = require('./routes/teacher.routes');
 const assignRoutes = require('./routes/assignment.routes');
+const studentRoutes = require('./routes/student.routes');
 
 app.use(cookieParser());
 app.use(express.json());
@@ -29,6 +30,7 @@ app.use("/", refreshTokenRoutes)
 app.use("/teacher", teacherRoutes)
 app.use('/public', express.static('public'));
 app.use('/assignment', assignRoutes);
+app.use('/student', studentRoutes);
 
 app.listen(port, () => {    
     console.log(`Server is running on port ${port}`);
