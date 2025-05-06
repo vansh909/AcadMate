@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import AttendanceForm from './AttendanceForm'; // Add this import
+import AttendanceForm from './AttendanceForm'; 
 
 const TeacherDashboard = () => {
   const [teacherData, setTeacherData] = useState(null);
@@ -9,6 +9,8 @@ const TeacherDashboard = () => {
   const [error, setError] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
   const [showAttendance, setShowAttendance] = useState(false);
+  const [showCirculars, setShowCirculars] = useState(false); 
+  const [circulars, setCirculars] = useState([]); 
   const [selectedClass, setSelectedClass] = useState(null);
   const [studentsList, setStudentsList] = useState([]);
   const [showStudentsList, setShowStudentsList] = useState(false);
@@ -82,6 +84,23 @@ const TeacherDashboard = () => {
     }
   };
 
+  const fetchCirculars = async () => {
+    try {
+      const response = await fetch('http://localhost:4000/teacher/get-circulars', {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch circulars');
+      }
+
+      const data = await response.json();
+      setCirculars(data || []);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   const renderStudentsList = () => (
     <div className="bg-white shadow overflow-hidden sm:rounded-lg">
       <div className="px-4 py-5 sm:px-6">
@@ -121,6 +140,36 @@ const TeacherDashboard = () => {
           </table>
         ) : (
           <div className="text-center py-4">No students found</div>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderCirculars = () => (
+    <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+      <div className="px-4 py-5 sm:px-6">
+        <h3 className="text-lg leading-6 font-medium text-gray-900">Circulars</h3>
+      </div>
+      <div className="border-t border-gray-200">
+        {circulars.length > 0 ? (
+          <ul className="divide-y divide-gray-200">
+            {circulars.map((circular, index) => (
+              <li key={index} className="px-4 py-4 sm:px-6">
+                <h4 className="text-sm font-medium text-gray-900">{circular.title}</h4>
+                <p className="text-sm text-gray-600">For: {circular.circularFor}</p>
+                <a
+                  href={circular.circularUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  View Circular
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="text-center py-4">No circulars available</div>
         )}
       </div>
     </div>
@@ -291,11 +340,12 @@ const TeacherDashboard = () => {
           
           <div className="flex flex-wrap gap-3">
             <NavButton 
-              active={!showProfile && !showAttendance && !showStudentsList}
+              active={!showProfile && !showAttendance && !showStudentsList && !showCirculars}
               onClick={() => {
                 setShowProfile(false);
                 setShowAttendance(false);
                 setShowStudentsList(false);
+                setShowCirculars(false);
               }}
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -310,6 +360,7 @@ const TeacherDashboard = () => {
                 setShowProfile(true);
                 setShowAttendance(false);
                 setShowStudentsList(false);
+                setShowCirculars(false);
               }}
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -325,6 +376,7 @@ const TeacherDashboard = () => {
                   setShowProfile(false);
                   setShowAttendance(true);
                   setShowStudentsList(false);
+                  setShowCirculars(false);
                 }}
               >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -334,11 +386,20 @@ const TeacherDashboard = () => {
               </NavButton>
             )}
 
-            <NavButton onClick={() => navigate('/assignment-dashboard')}>
+            <NavButton 
+              active={showCirculars}
+              onClick={() => {
+                setShowProfile(false);
+                setShowAttendance(false);
+                setShowStudentsList(false);
+                setShowCirculars(true);
+                fetchCirculars();
+              }}
+            >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              Assignments
+              Circulars
             </NavButton>
           </div>
         </div>
@@ -359,6 +420,8 @@ const TeacherDashboard = () => {
             </div>
           ) : showAttendance ? (
             <AttendanceForm teacherData={teacherData} />
+          ) : showCirculars ? (
+            renderCirculars()
           ) : showStudentsList ? (
             <div className="space-y-6">
               <div className="flex items-center justify-between mb-6">
