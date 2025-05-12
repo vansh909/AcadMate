@@ -152,22 +152,34 @@ const TeacherDashboard = () => {
       </div>
       <div className="border-t border-gray-200">
         {circulars.length > 0 ? (
-          <ul className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-200">
             {circulars.map((circular, index) => (
-              <li key={index} className="px-4 py-4 sm:px-6">
-                <h4 className="text-sm font-medium text-gray-900">{circular.title}</h4>
-                <p className="text-sm text-gray-600">For: {circular.circularFor}</p>
+              <div key={index} className="p-4">
+                <h4 className="text-sm font-medium text-gray-900 mb-2">{circular.title}</h4>
+                <p className="text-sm text-gray-600 mb-2">For: {circular.circularFor}</p>
+                {/* PDF Viewer Container */}
+                <div className="border border-gray-200 rounded-lg overflow-hidden mb-4">
+                  <iframe
+                    src={circular.circularUrl}
+                    width="100%"
+                    height="600px"
+                    title={`Circular ${circular.title}`}
+                    className="w-full"
+                    style={{ border: 'none' }}
+                  />
+                </div>
+                {/* Fallback download link */}
                 <a
                   href={circular.circularUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:underline"
+                  className="text-blue-600 hover:underline text-sm"
                 >
-                  View Circular
+                  Open PDF in new tab
                 </a>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         ) : (
           <div className="text-center py-4">No circulars available</div>
         )}
