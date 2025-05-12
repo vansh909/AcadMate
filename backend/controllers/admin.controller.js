@@ -194,18 +194,31 @@ exports.addCircular = async(req, res)=>{
 
     if(circularFor != 'teacher' && circularFor != 'student' && circularFor!= 'both') return res.status(400),json({Message:"Invalid Data!"});
 
-
-    const circularPdf = await cloudinary.uploader.upload(req.file.path);
+    let url = null;
+   await cloudinary.uploader.upload(req.file.path, {
+      resource_type: "raw",
+      // folder: "circulars",
+    }, (error, result)=>{
+      if(error) {
+        console.log(error);
+        return res.status(500).json({Error:"Internal Server Error!"})
+      }
+      url = result.secure_url;
+        console.log(result);
+    });
 
     const newCircular = new circularModel({
       title: title,
       circularFor: circularFor,
-      circularUrl: circularPdf.secure_url
+      circularUrl: url
     })
     await newCircular.save();
     return res.status(201).json({Message : "Circular Posted Successfully!"});
   } catch (error) {
     console.log(error);
-    return res.status(500).json({Error:"Internal Server Error!"})
+    return res.status(500).json({Error:"Internal Server Error!"});
   }
 }
+
+
+
