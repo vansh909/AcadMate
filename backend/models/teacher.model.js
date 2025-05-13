@@ -43,6 +43,7 @@ const teacherSchema = new mongoose.Schema({
     },
     subject_specialization:{
         type:mongoose.Schema.Types.ObjectId,
+        ref:"subject",
         required:true
     }
 
