@@ -31,7 +31,9 @@ exports.getTeacherProfile = async(req, res)=>{
     const user = req.user;
     try {
         if(user.role !='teacher') return res.status(400).json({Message:"Not Authorized!"});
-        const teacherDetails = await Teacher.findOne({teacherId: user._id}).populate('teacherId', 'name email');
+        const teacherDetails = await Teacher.findOne({teacherId: user._id}).populate('teacherId', 'name email')
+        .populate('subject_specialization', 'subjectName');
+
         if(!teacherDetails) return res.status(400).json({Message:"No Teacher Found!"});
         return res.status(200).json({Message:"Teacher Profile Fetched Successfully!", teacher:teacherDetails});
     } catch (error) {

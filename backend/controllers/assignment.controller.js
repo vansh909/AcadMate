@@ -8,8 +8,19 @@ exports.addAssignment = async (req, res) => {
     console.log("controller hit!");
     try {
         const {assignmentName, class_name,endDate} = req.body;
+        const dueDate  = new Date(endDate);
+
+        const today = new Date();
+        dueDate.setHours(0, 0, 0, 0); // Set time to midnight
+        today.setHours(0, 0, 0, 0); // Set time to midnight
+        if(dueDate < today) {
+            return res.status(400).json({
+                success: false,
+                message: "Due date cannot be in the past",
+            });
+        }
         const result = await cloudinary.uploader.upload(req.file.path); 
-        console.log(result);
+        // console.log(result);
 
         const classId = await Class.findOne({ class_name });
 

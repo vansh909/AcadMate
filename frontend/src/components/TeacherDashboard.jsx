@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AttendanceForm from './AttendanceForm'; 
+import AssignmentDashboard from './AssignmentDashboard';
 
 const TeacherDashboard = () => {
   const [teacherData, setTeacherData] = useState(null);
@@ -14,6 +15,7 @@ const TeacherDashboard = () => {
   const [selectedClass, setSelectedClass] = useState(null);
   const [studentsList, setStudentsList] = useState([]);
   const [showStudentsList, setShowStudentsList] = useState(false);
+  const [showAssignments, setShowAssignments] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -352,16 +354,19 @@ const TeacherDashboard = () => {
           
           <div className="flex flex-wrap gap-3">
             <NavButton 
-              active={!showProfile && !showAttendance && !showStudentsList && !showCirculars}
+              active={!showProfile && !showAttendance && !showStudentsList && !showCirculars && !showAssignments}
               onClick={() => {
                 setShowProfile(false);
                 setShowAttendance(false);
                 setShowStudentsList(false);
                 setShowCirculars(false);
+                setShowAssignments(false);
               }}
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" 
+                />
               </svg>
               Classes
             </NavButton>
@@ -373,6 +378,7 @@ const TeacherDashboard = () => {
                 setShowAttendance(false);
                 setShowStudentsList(false);
                 setShowCirculars(false);
+                setShowAssignments(false);
               }}
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -389,6 +395,7 @@ const TeacherDashboard = () => {
                   setShowAttendance(true);
                   setShowStudentsList(false);
                   setShowCirculars(false);
+                  setShowAssignments(false);
                 }}
               >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -405,6 +412,7 @@ const TeacherDashboard = () => {
                 setShowAttendance(false);
                 setShowStudentsList(false);
                 setShowCirculars(true);
+                setShowAssignments(false);
                 fetchCirculars();
               }}
             >
@@ -412,6 +420,24 @@ const TeacherDashboard = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               Circulars
+            </NavButton>
+
+            <NavButton 
+              active={showAssignments}
+              onClick={() => {
+                setShowProfile(false);
+                setShowAttendance(false);
+                setShowStudentsList(false);
+                setShowCirculars(false);
+                setShowAssignments(true);
+              }}
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" 
+                />
+              </svg>
+              Assignments
             </NavButton>
           </div>
         </div>
@@ -434,6 +460,8 @@ const TeacherDashboard = () => {
             <AttendanceForm teacherData={teacherData} />
           ) : showCirculars ? (
             renderCirculars()
+          ) : showAssignments ? (
+            <AssignmentDashboard />
           ) : showStudentsList ? (
             <div className="space-y-6">
               <div className="flex items-center justify-between mb-6">
@@ -459,7 +487,7 @@ const TeacherDashboard = () => {
             <div className="space-y-6">
               <div className="flex items-center mb-6">
                 <svg className="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
                 </svg>
                 <h2 className="text-3xl font-bold text-gray-900">Your Classes</h2>
               </div>
