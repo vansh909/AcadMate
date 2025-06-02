@@ -7,7 +7,11 @@ const Class = require("../models/class.model");
 const MappingSchema = require("../models/subject-teacher-mapping.model");
 const teacherModel = require("../models/teacher.model");
 const circularModel = require('../models/circulars.model');
-const cloudinary  = require('../config/cloudinary')
+const cloudinary  = require('../config/cloudinary');
+
+const path = require('path');
+
+const bucket = require('../firebase');
 
 exports.adminSignup = async (req, res) => {
   const existingAdmin = await User.findOne({ role: "admin" });
@@ -197,18 +201,40 @@ exports.addCircular = async(req, res)=>{
 
     if(circularFor != 'teacher' && circularFor != 'student' && circularFor!= 'both') return res.status(400),json({Message:"Invalid Data!"});
 
-    let url = null;
-   await cloudinary.uploader.upload(req.file.path, {
-      resource_type: "raw",
-      // folder: "circulars",
-    }, (error, result)=>{
-      if(error) {
-        console.log(error);
-        return res.status(500).json({Error:"Internal Server Error!"})
-      }
-      url = result.secure_url;
-        console.log(result);
+  //   let url = null;
+  //  await cloudinary.uploader.upload(req.file.path, {
+  //     resource_type: "raw",
+  //     // folder: "circulars",
+  //   }, (error, result)=>{
+  //     if(error) {
+  //       console.log(error);
+  //       return res.status(500).json({Error:"Internal Server Error!"})
+  //     }
+  //     url = result.secure_url;
+  //       console.log(result);
+  //   });
+
+  const filePath = req.file.path;
+    const destination = `circulars/${Date.now()}_${req.file.originalname}`;
+    const options = {
+      destination,
+      metadata: {
+        contentType: req.file.mimetype,
+      },
+    };
+
+    await bucket.upload(filePath, options);
+
+    // Get the public URL
+    const file = bucket.file(destination);
+    const [url] = await file.getSignedUrl({
+      action: "read",
+      expires: "03-01-2030", // You can change expiry
     });
+
+    // Delete local file after upload
+    
+
 
     const newCircular = new circularModel({
       title: title,
