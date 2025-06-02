@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import StudentForm from './StudentForm';
 import TeacherForm from './TeacherForm';
 import TeacherMapping from './TeacherMapping';
@@ -115,6 +116,17 @@ const CircularForm = () => {
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('student');
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Clear cookies using document.cookie
+    document.cookie.split(";").forEach(function(c) { 
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+    
+    // Redirect to login page
+    navigate('/login');
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -134,7 +146,20 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-4 flex justify-center items-center">
       <div className="max-w-4xl w-full bg-white rounded-lg shadow-lg overflow-hidden p-8">
-        <h1 className="text-4xl font-bold text-center text-blue-600 mb-8">Admin Dashboard</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl font-bold text-blue-600">Admin Dashboard</h1>
+          <button
+            onClick={handleLogout}
+            className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" 
+              />
+            </svg>
+            Logout
+          </button>
+        </div>
 
         <div className="flex flex-wrap border-b mb-8">
           <button

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { format } from 'date-fns';
 
 const AssignmentDashboard = () => {
@@ -9,10 +9,30 @@ const AssignmentDashboard = () => {
   const [selectedClass, setSelectedClass] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [assignments, setAssignments] = useState([]); // State to store uploaded assignments
+  const [assignments, setAssignments] = useState([]);
+
+  // Fetch assignments function wrapped in useCallback
+  const fetchAssignments = useCallback(async () => {
+    try {
+      console.log('Fetching assignments...');
+      const response = await fetch('http://localhost:4000/assignment/assignmentList', {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch assignments');
+      }
+
+      const data = await response.json();
+      console.log('Assignments received:', data);
+      setAssignments(data.assignments || []);
+    } catch (err) {
+      console.error('Error fetching assignments:', err);
+      setError('Failed to load assignments');
+    }
+  }, []);
 
   useEffect(() => {
-    // Fetch the list of classes the teacher teaches
     const fetchClasses = async () => {
       try {
         const response = await fetch('http://localhost:4000/teacher/ClassesList', {
@@ -20,58 +40,56 @@ const AssignmentDashboard = () => {
         });
 
         if (!response.ok) {
-          const contentType = response.headers.get('content-type');
-          if (contentType && contentType.includes('text/html')) {
-            throw new Error('Received an HTML response instead of JSON. Check the backend.');
-          }
           throw new Error('Failed to fetch classes');
         }
 
         const data = await response.json();
+        console.log('Classes received:', data);
         setClasses(data.classes || []);
       } catch (err) {
-        setError(err.message);
+        console.error('Error fetching classes:', err);
+        setError('Failed to load classes');
       }
     };
 
     fetchClasses();
-    fetchAssignments(); // Fetch assignments on component mount
-  }, []);
-
-  const fetchAssignments = async () => {
-    // Fetch the list of uploaded assignments
-    try {
-      const response = await fetch('http://localhost:4000/assignment/assignmentList', {
-        credentials: 'include',
-      });
-
-      const data = await response.json();
-      setAssignments(data.assignments || []);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+    fetchAssignments();
+  }, [fetchAssignments]);
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      // Optional: Add file type validation
+      if (selectedFile.type === 'application/pdf' || 
+          selectedFile.type === 'application/msword' || 
+          selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        setFile(selectedFile);
+        setError(null);
+      } else {
+        setError('Please upload a PDF or Word document');
+        e.target.value = ''; // Reset file input
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!selectedClass) {
-      alert('Please select a class before submitting.');
+    if (!file || !assignmentName || !selectedClass || !endDate) {
+      setError('Please fill all required fields');
       return;
     }
 
     setLoading(true);
+    setError(null);
 
     const formData = new FormData();
-    formData.append('assignmentName', assignmentName);
-    formData.append('endDate', endDate);
     formData.append('file', file);
-    formData.append('class_name', selectedClass); // Send class_name instead of classId
+    formData.append('assignmentName', assignmentName);
+    formData.append('class_name', selectedClass);
+    formData.append('endDate', endDate);
 
     try {
+      console.log('Submitting assignment...');
       const response = await fetch('http://localhost:4000/assignment/addAssignment', {
         method: 'POST',
         credentials: 'include',
@@ -83,14 +101,16 @@ const AssignmentDashboard = () => {
         throw new Error(errorData.message || 'Failed to upload assignment');
       }
 
-      alert('Assignment uploaded successfully!');
+      // Reset form and refresh assignments
       setAssignmentName('');
       setEndDate('');
       setFile(null);
       setSelectedClass('');
-      fetchAssignments(); // Refresh the assignments list after upload
+      await fetchAssignments();
+      alert('Assignment uploaded successfully!');
     } catch (err) {
-      alert(err.message);
+      console.error('Upload error:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -259,10 +279,13 @@ const AssignmentDashboard = () => {
                   className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300"
                   required
                 >
-                  <option value="" disabled>Select a class</option>
+                  <option value="">Select a class</option>
                   {classes.map((classItem) => (
-                    <option key={classItem.classId._id} value={classItem.classId.class_name}>
-                      {classItem.classId.class_name}
+                    <option 
+                      key={classItem._id || classItem.classId?._id} 
+                      value={classItem.class_name || classItem.classId?.class_name}
+                    >
+                      {classItem.class_name || classItem.classId?.class_name}
                     </option>
                   ))}
                 </select>

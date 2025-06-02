@@ -28,7 +28,7 @@ exports.getAttendance = async (req, res) => {
 
     const attendanceRecords = await Attendance.find({ 
       studentId: student.id, 
-      classId: student.classId 
+      classId: student.class_id
     });
 
     if (!attendanceRecords) {

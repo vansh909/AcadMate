@@ -324,6 +324,16 @@ const TeacherDashboard = () => {
     </div>
   );
 
+  const handleLogout = () => {
+    // Clear cookies using document.cookie
+    document.cookie.split(";").forEach(function(c) { 
+      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+    
+    // Redirect to login page
+    navigate('/login');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -354,7 +364,7 @@ const TeacherDashboard = () => {
           
           <div className="flex flex-wrap gap-3">
             <NavButton 
-              active={!showProfile && !showAttendance && !showStudentsList && !showCirculars && !showAssignments}
+              active={!showProfile && !showAttendance && !showStudentsList && !showCirculars}
               onClick={() => {
                 setShowProfile(false);
                 setShowAttendance(false);
@@ -364,9 +374,7 @@ const TeacherDashboard = () => {
               }}
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
-                  d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" 
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
               </svg>
               Classes
             </NavButton>
@@ -439,6 +447,18 @@ const TeacherDashboard = () => {
               </svg>
               Assignments
             </NavButton>
+
+            <NavButton 
+              onClick={handleLogout}
+              className="ml-auto"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} 
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" 
+                />
+              </svg>
+              Logout
+            </NavButton>
           </div>
         </div>
       </nav>
@@ -487,7 +507,7 @@ const TeacherDashboard = () => {
             <div className="space-y-6">
               <div className="flex items-center mb-6">
                 <svg className="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                 </svg>
                 <h2 className="text-3xl font-bold text-gray-900">Your Classes</h2>
               </div>
