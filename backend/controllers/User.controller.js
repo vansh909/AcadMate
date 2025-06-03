@@ -70,7 +70,7 @@ exports.signup = async (req, res) => {
         return res.status(400).json({ Message: "Error Fetching Class" });
       const newStudent = new student({
         student_id: newUser._id,
-        class: className.id,
+        class_id: className.id,
         date_of_birth: data.date_of_birth,
         father_name: data.father_name,
         mother_name: data.mother_name,
