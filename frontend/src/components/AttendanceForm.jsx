@@ -48,18 +48,33 @@ const AttendanceForm = ({ teacherData }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Debug log to check teacherData
+    console.log('Teacher Data:', teacherData);
+    
+    // Validate class name before submission
+    if (!teacherData?.class_name) {
+      alert('Class name is missing!');
+      return;
+    }
+
     try {
-      const response = await fetch('http://localhost:4000/teacher/attendance', {
+      const attendanceData = {
+        className: teacherData.class_name,
+        date: date,
+        attendance: attendance
+      };
+
+      // Debug log to check payload
+      console.log('Submitting attendance data:', attendanceData);
+
+      const response = await fetch('http://localhost:4000/teacher/Attendance', { // Fixed URL
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({
-          className: teacherData.class_name,
-          date,
-          attendance
-        }),
+        body: JSON.stringify(attendanceData)
       });
 
       if (!response.ok) {
@@ -67,9 +82,12 @@ const AttendanceForm = ({ teacherData }) => {
         throw new Error(error.Message || 'Failed to submit attendance');
       }
 
-      alert('Attendance marked successfully!');
+      const data = await response.json();
+      alert(data.Message);
+      
     } catch (error) {
-      alert(error.message);
+      console.error('Error submitting attendance:', error);
+      alert(`Failed to submit attendance: ${error.message}`);
     }
   };
 
@@ -186,3 +204,9 @@ const AttendanceForm = ({ teacherData }) => {
 };
 
 export default AttendanceForm;
+
+// In TeacherDashboard.jsx where AttendanceForm is used
+<AttendanceForm teacherData={{
+  is_class_teacher: true,
+  class_name: "class_name_here" // Make sure this is provided
+}} />

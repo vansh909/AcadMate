@@ -67,9 +67,11 @@ exports.getClassLists = async (req, res) => {
 exports.addAttendace = async(req, res)=>{
     const user = req.user;
     const {className, date, attendance} = req.body;
+
     try {
+        console.log(className);
         const IsClassTeacher = await Classes.findOne({class_teacher_id: user._id, class_name:className});
-        console.log(IsClassTeacher)
+        // console.log(IsClassTeacher)
         if(!IsClassTeacher) return res.status(400).json({Message:"You are not the class teacher!"}); 
 
         // Parse and format the date properly

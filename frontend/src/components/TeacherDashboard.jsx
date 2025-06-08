@@ -465,56 +465,63 @@ const TeacherDashboard = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white/60 backdrop-blur-sm rounded-xl shadow-xl p-6">
-          {showProfile ? (
-            <div className="space-y-6">
-              <div className="flex items-center mb-6">
-                <svg className="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <h2 className="text-3xl font-bold text-gray-900">Teacher Profile</h2>
-              </div>
-              {renderProfile()}
-            </div>
-          ) : showAttendance ? (
-            <AttendanceForm teacherData={teacherData} />
-          ) : showCirculars ? (
-            renderCirculars()
-          ) : showAssignments ? (
-            <AssignmentDashboard />
-          ) : showStudentsList ? (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center">
+        {showAttendance ? (
+          <AttendanceForm 
+            teacherData={{
+              is_class_teacher: teacherData?.is_class_teacher,
+              class_name: teacherData?.class_name // Pass the actual class name
+            }} 
+          />
+        ) : (
+          <div className="bg-white/60 backdrop-blur-sm rounded-xl shadow-xl p-6">
+            {showProfile ? (
+              <div className="space-y-6">
+                <div className="flex items-center mb-6">
                   <svg className="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                  <h2 className="text-3xl font-bold text-gray-900">Students List</h2>
+                  <h2 className="text-3xl font-bold text-gray-900">Teacher Profile</h2>
                 </div>
-                <button
-                  onClick={() => setShowStudentsList(false)}
-                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                {renderProfile()}
+              </div>
+            ) : showCirculars ? (
+              renderCirculars()
+            ) : showAssignments ? (
+              <AssignmentDashboard />
+            ) : showStudentsList ? (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center">
+                    <svg className="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                    <h2 className="text-3xl font-bold text-gray-900">Students List</h2>
+                  </div>
+                  <button
+                    onClick={() => setShowStudentsList(false)}
+                    className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Back to Classes
+                  </button>
+                </div>
+                {renderStudentsList()}
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex items-center mb-6">
+                  <svg className="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                   </svg>
-                  Back to Classes
-                </button>
+                  <h2 className="text-3xl font-bold text-gray-900">Your Classes</h2>
+                </div>
+                {renderClasses()}
               </div>
-              {renderStudentsList()}
-            </div>
-          ) : (
-            <div className="space-y-6">
-              <div className="flex items-center mb-6">
-                <svg className="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                </svg>
-                <h2 className="text-3xl font-bold text-gray-900">Your Classes</h2>
-              </div>
-              {renderClasses()}
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
