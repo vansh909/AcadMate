@@ -10,8 +10,9 @@ const circularModel = require('../models/circulars.model');
 const cloudinary  = require('../config/cloudinary');
 
 const path = require('path');
+const fs = require('fs');
 
-const bucket = require('../firebase');
+const { bucket, getPublicUrl } = require('../firebase');
 
 exports.adminSignup = async (req, res) => {
   const existingAdmin = await User.findOne({ role: "admin" });
@@ -191,63 +192,94 @@ exports.getSubjects = async (req, res) => {
 
 
 
-exports.addCircular = async(req, res)=>{
-  const user = req.user;
-  const {title, circularFor} = req.body
-  try {
-    if(user.role != 'admin') return res.status(401).json({Message:"Not Authorized!"});
-    if(!req.file) return res.status(400).json({Message:"Please provide a file to upload!"});
-    if(!title || !circularFor) return res.status(400).json({Message:"Please provide all details!"});
+// exports.addCircular = async(req, res) => {
+//     try {
+//         const user = req.user;
+//         const {title, circularFor} = req.body
+//         if(user.role != 'admin') return res.status(401).json({Message:"Not Authorized!"});
+//         if(!req.file) return res.status(400).json({Message:"Please provide a file to upload!"});
+//         if(!title || !circularFor) return res.status(400).json({Message:"Please provide all details!"});
 
-    if(circularFor != 'teacher' && circularFor != 'student' && circularFor!= 'both') return res.status(400),json({Message:"Invalid Data!"});
+//         if(circularFor != 'teacher' && circularFor != 'student' && circularFor!= 'both') return res.status(400),json({Message:"Invalid Data!"});
 
-  //   let url = null;
-  //  await cloudinary.uploader.upload(req.file.path, {
-  //     resource_type: "raw",
-  //     // folder: "circulars",
-  //   }, (error, result)=>{
-  //     if(error) {
-  //       console.log(error);
-  //       return res.status(500).json({Error:"Internal Server Error!"})
-  //     }
-  //     url = result.secure_url;
-  //       console.log(result);
-  //   });
+//         const filePath = req.file.path;
+//         const destination = `circulars/${Date.now()}_${req.file.originalname}`;
+        
+//         await bucket.upload(filePath, {
+//             destination,
+//             metadata: {
+//                 contentType: req.file.mimetype
+//             }
+//         });
 
-  const filePath = req.file.path;
-    const destination = `circulars/${Date.now()}_${req.file.originalname}`;
-    const options = {
-      destination,
-      metadata: {
-        contentType: req.file.mimetype,
-      },
-    };
+//         // Get public URL instead of signed URL
+//         const publicUrl = await getPublicUrl(destination);
 
-    await bucket.upload(filePath, options);
+//         const newCircular = new circularModel({
+//             title,
+//             circularFor,
+//             circularUrl: publicUrl
+//         });
 
-    // Get the public URL
-    const file = bucket.file(destination);
-    const [url] = await file.getSignedUrl({
-      action: "read",
-      expires: "03-01-2030", // You can change expiry
-    });
+//         await newCircular.save();
+//         return res.status(201).json({
+//             Message: "Circular Posted Successfully!",
+//             circular: newCircular
+//         });
 
-    // Delete local file after upload
-    
-
-
-    const newCircular = new circularModel({
-      title: title,
-      circularFor: circularFor,
-      circularUrl: url
-    })
-    await newCircular.save();
-    return res.status(201).json({Message : "Circular Posted Successfully!"});
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({Error:"Internal Server Error!"});
-  }
-}
+//     } catch (error) {
+//         console.error('Error:', error);
+//         return res.status(500).json({Error: "Internal Server Error!"});
+//     }
+// };
 
 
 
+exports.addCircular = async (req, res) => {
+    try {
+        const user = req.user;
+        const { title, circularFor } = req.body;
+
+        if (user.role !== 'admin') return res.status(401).json({ Message: "Not Authorized!" });
+        if (!req.file) return res.status(400).json({ Message: "Please provide a file to upload!" });
+        if (!title || !circularFor) return res.status(400).json({ Message: "Please provide all details!" });
+
+        if (!['teacher', 'student', 'both'].includes(circularFor)) {
+            return res.status(400).json({ Message: "Invalid circularFor value!" });
+        }
+
+        const sanitizedFilename = req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const destination = `circulars/${Date.now()}_${sanitizedFilename}`;
+
+        // Upload to Firebase Storage
+        await bucket.upload(req.file.path, {
+            destination,
+            metadata: {
+                contentType: req.file.mimetype,
+                cacheControl: 'public, max-age=31536000'
+            }
+        });
+
+        // Optional: Remove temp file after upload
+        fs.unlinkSync(req.file.path);
+
+        const publicUrl = await getPublicUrl(destination);
+
+        const newCircular = new circularModel({
+            title,
+            circularFor,
+            circularUrl: publicUrl
+        });
+
+        await newCircular.save();
+
+        return res.status(201).json({
+            Message: "Circular Posted Successfully!",
+            circular: newCircular
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
+        return res.status(500).json({ Error: "Internal Server Error!" });
+    }
+};

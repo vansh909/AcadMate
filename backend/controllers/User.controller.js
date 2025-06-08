@@ -198,7 +198,7 @@ exports.login = async (req, res) => {
       maxAge: 17 * 24 * 60 * 60 * 1000,
     });
 
-    console.log(existingUser.role);
+    // console.log(existingUser.role);
     return res.status(200).json(
       {
         message:"Login successful",
