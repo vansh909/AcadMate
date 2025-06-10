@@ -8,6 +8,7 @@ const AttendanceForm = ({ teacherData }) => {
   const [attendance, setAttendance] = useState([]);
   const [date, setDate] = useState(format(new Date(), 'dd-MM-yy'));
 
+
   // Fetch students list for the class teacher
   useEffect(() => {
     const fetchStudents = async () => {
@@ -204,9 +205,3 @@ const AttendanceForm = ({ teacherData }) => {
 };
 
 export default AttendanceForm;
-
-// In TeacherDashboard.jsx where AttendanceForm is used
-<AttendanceForm teacherData={{
-  is_class_teacher: true,
-  class_name: "class_name_here" // Make sure this is provided
-}} />

@@ -229,7 +229,11 @@ const TeacherDashboard = () => {
             key={index}
             onClick={() => {
               if (teacherData?.is_class_teacher) {
-                fetchStudentsList();
+                setSelectedClass(classItem);
+                setShowAttendance(false);
+                setShowStudentsList(true);
+                // Optionally, fetch students for this class if needed:
+                // fetchStudentsList(classItem.classId._id);
               }
             }}
             className={`bg-white shadow-lg rounded-lg p-6 border border-gray-200 
@@ -465,12 +469,12 @@ const TeacherDashboard = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {showAttendance ? (
-          <AttendanceForm 
+        {showAttendance && selectedClass ? (
+          <AttendanceForm
             teacherData={{
               is_class_teacher: teacherData?.is_class_teacher,
-              class_name: teacherData?.class_name // Pass the actual class name
-            }} 
+              class_name: selectedClass?.classId?.class_name // or selectedClass.class_name
+            }}
           />
         ) : (
           <div className="bg-white/60 backdrop-blur-sm rounded-xl shadow-xl p-6">
