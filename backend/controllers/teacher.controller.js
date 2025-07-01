@@ -19,7 +19,7 @@ exports.getStudentsList = async(req, res)=>{
 
         console.log(studentsList)
         if(!studentsList) return res.status(400).json({Message:`No Students in Class ${myClass.class_name}`});
-        return res.status(200).json({Message:"Students fetched Successfully!", students:studentsList});
+        return res.status(200).json({Message:"Students fetched Successfully!",studentClass: myClass.class_name ,students:studentsList});
     } catch (error) {
         console.log(error);
         return res.status(500).json({Error:"Internal Server Error!"});

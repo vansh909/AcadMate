@@ -7,7 +7,7 @@ const AttendanceForm = ({ teacherData }) => {
   const [error, setError] = useState(null);
   const [attendance, setAttendance] = useState([]);
   const [date, setDate] = useState(format(new Date(), 'dd-MM-yy'));
-
+  const [className, setClassName] = useState('');
 
   // Fetch students list for the class teacher
   useEffect(() => {
@@ -27,6 +27,9 @@ const AttendanceForm = ({ teacherData }) => {
           studentId: student._id,
           status: 'present'
         })));
+        // Set class name if available in response
+        if (data.className) setClassName(data.className);
+        else if (teacherData?.class_name) setClassName(teacherData.class_name);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -49,27 +52,20 @@ const AttendanceForm = ({ teacherData }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Debug log to check teacherData
-    console.log('Teacher Data:', teacherData);
-    
-    // Validate class name before submission
-    if (!teacherData?.class_name) {
+
+    if (!className) {
       alert('Class name is missing!');
       return;
     }
 
     try {
       const attendanceData = {
-        className: teacherData.class_name,
+        className: className,
         date: date,
         attendance: attendance
       };
 
-      // Debug log to check payload
-      console.log('Submitting attendance data:', attendanceData);
-
-      const response = await fetch('http://localhost:4000/teacher/Attendance', { // Fixed URL
+      const response = await fetch('http://localhost:4000/teacher/Attendance', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,9 +81,7 @@ const AttendanceForm = ({ teacherData }) => {
 
       const data = await response.json();
       alert(data.Message);
-      
     } catch (error) {
-      console.error('Error submitting attendance:', error);
       alert(`Failed to submit attendance: ${error.message}`);
     }
   };
@@ -110,21 +104,14 @@ const AttendanceForm = ({ teacherData }) => {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center mb-6">
-        <svg 
-          className="w-8 h-8 text-blue-600 mr-3" 
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
-        >
-          <path 
-            strokeLinecap="round" 
-            strokeLinejoin="round" 
-            strokeWidth={2} 
-            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" 
-          />
-        </svg>
-        <h2 className="text-3xl font-bold text-gray-900">Mark Attendance</h2>
+      {/* Display class name and today's date */}
+      <div className="mb-4">
+        <div className="text-lg font-semibold text-blue-700">
+          Class Name: <span className="font-bold">{className || teacherData.class_name || 'N/A'}</span>
+        </div>
+        <div className="text-lg font-semibold text-blue-700">
+          Date: <span className="font-bold">{date}</span>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">

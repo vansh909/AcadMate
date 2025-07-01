@@ -408,6 +408,15 @@ const TeacherDashboard = () => {
                   setShowStudentsList(false);
                   setShowCirculars(false);
                   setShowAssignments(false);
+
+                  // If not already set, set selectedClass to the teacher's class
+                  if (!selectedClass && classesList.length > 0 && teacherData?.is_class_teacher) {
+                    // Find the class where the teacher is class teacher
+                    const mainClass = classesList.find(
+                      c => c.classId.class_teacher_id === teacherData.teacherId._id
+                    );
+                    setSelectedClass(mainClass || classesList[0]);
+                  }
                 }}
               >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
