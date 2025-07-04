@@ -2,6 +2,7 @@ const Assignment = require("../models/assignment.model");
 const Class = require("../models/class.model");
 const cloudinary = require("../config/cloudinary");
 const multer = require("../middlewares/multer");
+const uploadFileToDrive = require('../googleapi.js');
 
 const agenda = require('../jobs.js');
 const path = require('path');
@@ -9,7 +10,7 @@ const path = require('path');
 const bucket = require('../firebase');
 //multer + cloudinary
 exports.addAssignment = async (req, res) => {
-  console.log("controller hit!");
+
   try {
     const { assignmentName, class_name, endDate } = req.body;
     const dueDate = new Date(endDate);
@@ -25,23 +26,23 @@ exports.addAssignment = async (req, res) => {
     }
     // const result = await cloudinary.uploader.upload(req.file.path);
     // // console.log(result);
-    const filePath = req.file.path;
-    const destination = `assignments/${Date.now()}_${req.file.originalname}`;
-    const options = {
-      destination,
-      metadata: {
-        contentType: req.file.mimetype,
-      },
-    };
+    // const filePath = req.file.path;
+    // const destination = `assignments/${Date.now()}_${req.file.originalname}`;
+    // const options = {
+    //   destination,
+    //   metadata: {
+    //     contentType: req.file.mimetype,
+    //   },
+    // };
 
-    await bucket.upload(filePath, options);
+    // await bucket.upload(filePath, options);
 
-    // Get the public URL
-    const file = bucket.file(destination);
-    const [url] = await file.getSignedUrl({
-      action: "read",
-      expires: "03-01-2030", // You can change expiry
-    });
+    // // Get the public URL
+    // const file = bucket.file(destination);
+    // const [url] = await file.getSignedUrl({
+    //   action: "read",
+    //   expires: "03-01-2030", // You can change expiry
+    // });
 
     const classId = await Class.findOne({ class_name });
 
@@ -52,12 +53,24 @@ exports.addAssignment = async (req, res) => {
       });
     }
 
+    /// googledrive 
+    const filePath = req.file.path;
+    const fileName = req.file.originalname;
+    const folderId = '1Mh3udklaXvSbFLq7SazMdMgDE9bPokkS'; 
+
+    const { webViewLink } = await uploadFileToDrive(filePath, fileName, folderId);
+    const url = webViewLink; 
+
+
+
+
     const newAssignment = new Assignment({
       assignmentName: assignmentName,
       teacherId: req.user.id,
       classAssigned: classId.id,
       fileUrl: url,
       endDate: endDate,
+      
     });
 
     await newAssignment.save();
