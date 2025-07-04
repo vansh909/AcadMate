@@ -3,6 +3,7 @@ const Class = require("../models/class.model");
 const cloudinary = require("../config/cloudinary");
 const multer = require("../middlewares/multer");
 
+const agenda = require('../jobs.js');
 const path = require('path');
 
 const bucket = require('../firebase');
@@ -66,6 +67,11 @@ exports.addAssignment = async (req, res) => {
       message: "File uploaded successfully",
       data: newAssignment,
     });
+
+    //agenda
+    const milliSecondsPerDay = 24*60*60*1000;
+    const alertDate = new Date(dueDate-today);
+    agenda.schedule(alertDate, "assigment due alert", {assignmentId: newAssignment._id});
   } catch (error) {
     console.error("Error uploading file:", error);
     res.status(500).json({ error: "Internal Server Error" });
