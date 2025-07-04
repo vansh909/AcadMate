@@ -56,7 +56,7 @@ exports.addAssignment = async (req, res) => {
     /// googledrive 
     const filePath = req.file.path;
     const fileName = req.file.originalname;
-    const folderId = '1Mh3udklaXvSbFLq7SazMdMgDE9bPokkS'; 
+    const folderId = process.env.folderId; 
 
     const { webViewLink } = await uploadFileToDrive(filePath, fileName, folderId);
     const url = webViewLink; 
