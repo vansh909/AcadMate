@@ -31,14 +31,18 @@ app.use("/teacher", teacherRoutes)
 app.use('/public', express.static('public'));
 app.use('/assignment', assignRoutes);
 app.use('/student', studentRoutes);
+const agenda =require('./jobs.js');
 
 app.listen(port, () => {    
     console.log(`Server is running on port ${port}`);
 })
 
+
 mongoose.connect(process.env.MONGO_URI)
-.then(() => {
+.then(async() => {
     console.log('Connected to MongoDB');
+    await agenda.start();
+    console.log("agenda started");
 }
 ).catch((err) => {
     console.log('Error connecting to MongoDB:', err);
