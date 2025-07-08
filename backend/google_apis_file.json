@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "acadmate-464914",
+  "private_key_id": "915c873e67fff7a413807fe73ebafffbc81bf3f8",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCU1rnEm066xOLk\noMygRr9wGECA8GI1i2z1ZaORQcrfpvlXTUiaHOxEXSkk4yvBfLJtChpbhNQbhTeG\nS3JS2+a7siG2GJ4SctwMzATmJidVwNdL2Rwk2QxGSJW0qQMvud1B8RfNKoTPLAan\nL9HnxH+oAD9vX8FV6pInmB7g058hviY81uQTdO9kxyM844OrSfoh4iWiYoU0p7+Q\nRIkWMa1Ze8k02jkVgWhltTyoqVgBO5BLqFCegHgUk9RC6xlLl6M8sbJaU8vbVXFb\nJamJIclGgsQ16SQgKHYuTdEI8M1OAJgysoJVrVw+t6oof8LeeAJPjOt7oo51xskt\nYh+6NZFTAgMBAAECggEAJ7AgRhRRyIzCoctc9SoYVygoXxl6XqPIkKEjHhMoqT2p\nhEWH5AxtVgdvdrYaz1PUci38/EVtl88MkMNif0TDAG7N/XQQBoRZOBJZBhPLblrn\nLgL9NbgoxT8KqGte/aV2oeRLf/pkAqhPN9qRAtfLYH18bNLgR2wuv98Y8MONTd4x\nyC54+Ev4rtViuAs1sY/bdO8yt1kLYH2f2/n8we3Gm7MXGmVbHYfXcmQU45CA3uVN\nmLhY2QCQ3shHngnm7FjVR238w06GLdYWWNMjyxrkh8OsNRng36FG45w/zXUWwt2W\nRMfMqewY8ItOFAKkhadL00zVgHIswwh6xAbs1/YeiQKBgQDI2K3iDtNvV09GCFVC\nImgw34yvr2ylmH4GDDOW1+lAuz2PcxipW2jNxyXFFhvBfqLy4m5VJffMvMmsiiiY\nuAeOzwS1K32TNXwMePNSo4FVDJqO5LMrtabprF66TjWZwLX3oqLutKiMAdCsJGct\n+FBTFlM51BywVIpV60tfirjT2QKBgQC9tfT43aSoSgbJfRlWlNl62HwQ8Wdg6ru6\nF9GuR7WHtGO66wItqQuS7roiwI2CIJ7c4poujAw2bGuzCYFWHMbo0lNe1FSg3usJ\nRP9foa5+QE5E0bu3g17ji/WOwO3tjU0SVjXr5M24YxqBAsJ9D4bUnwi9WPqyyZgv\niu26VbjPCwKBgH2rzslm+3dsiybH6gkSnF0QU+hN/M50504DbnhRKxsczb0niGPX\n1XEEziZO2hktkuolMmJG+pF6AzrZy+MbK2d5M3nk95MX4UGwoJexxSghVchZY57S\n79jAyRkL/M/y3ClR818nXVsVe6tqr8D84c3LZ1IE3dqbW1+9dZEXrOSpAoGAF/cf\nfjzJqzTGzLdP9x8QpjMo4R8N1zFwC58srt6CMSV5n8hGWyxKuQINY4x9k925E+BQ\nZ+brOAjURibCPvWdrxW60HT0R+pBOMeNlzAekfZfrNPt6c3fs9EfcSwwIl1CSjm3\n0Bf0YQGr/HYzyYanmr6IZRsTeHh9ECx1wZ9InGcCgYEAktt1+N1R7hyyO3ZJ5nOh\noTdYa/+eJmyfLBOoTSVH3/zJKbnO9WFu8WIwnw74J8bbb93/M1RZQRiFTgRLMQVN\nt39tmRUjFDXV+1eag177C3Gk7vAkGpLNXgWF3G6Gjob74Qz4V0uw/oyXQXJqR4LK\nzSSUkIy9o87ohT+Qf8fytKw=\n-----END PRIVATE KEY-----\n",
+  "client_email": "acadmate-file-uploads@acadmate-464914.iam.gserviceaccount.com",
+  "client_id": "100053588058605461258",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/acadmate-file-uploads%40acadmate-464914.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
