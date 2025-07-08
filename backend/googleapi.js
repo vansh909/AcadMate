@@ -19,7 +19,7 @@ async function uploadFileToDrive(localPath, fileName, folderId) {
   };
 
   const media = {
-    mimeType: "application/pdf", // or detect from fileName
+    mimeType: "application/pdf",
     body: fs.createReadStream(localPath),
   };
 
