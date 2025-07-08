@@ -83,8 +83,14 @@ exports.addAssignment = async (req, res) => {
 
     //agenda
     const milliSecondsPerDay = 24*60*60*1000;
-    const alertDate = new Date(dueDate-today);
-    agenda.schedule(alertDate, "assigment due alert", {assignmentId: newAssignment._id});
+    const alertDate = new Date(new Date(endDate).getTime() - 5 * 24 * 60 * 60 * 1000);
+    if (alertDate > new Date()) {
+      await agenda.schedule(alertDate, "assignment due alert", { assignmentId: newAssignment._id });
+      console.log(`Agenda job scheduled for assignment ${newAssignment._id} at ${alertDate}`);
+    } else {
+      await agenda.now("assignment due alert", { assignmentId: newAssignment._id });
+      console.log(`Agenda job triggered immediately for assignment ${newAssignment._id}`);
+    }
   } catch (error) {
     console.error("Error uploading file:", error);
     res.status(500).json({ error: "Internal Server Error" });
