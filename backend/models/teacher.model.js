@@ -33,6 +33,7 @@ const teacherSchema = new mongoose.Schema({
         required:true
     },
     is_class_teacher:{
+        
         type:Boolean,
         required:true,
         default:false

@@ -94,7 +94,9 @@ exports.mappingTeacherSubjectClass = async (req, res) => {
 
     const classs = await Class.findOne({ class_name: data.className });
     const existingMapping = await MappingSchema.find({teacherId: teacher._id, classId:classs.id });
-    if(existingMapping) return res.status(400).json({Message:"Teacher already assigned to this class."});
+    if(existingMapping.length > 0) { 
+      console.log(existingMapping);
+      return res.status(400).json({Message:"Teacher already assigned to this class."});}
     const subject = await Subject.findOne({ subjectName: data.subjectName });
 
     const newMapping = new MappingSchema({

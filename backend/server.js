@@ -1,3 +1,5 @@
+
+//neww
 const port  = process.env.PORT || 4000;
 const express = require('express');
 const mongoose = require('mongoose');
@@ -19,6 +21,7 @@ const refreshTokenRoutes  = require('./routes/auth.routes');
 const teacherRoutes = require('./routes/teacher.routes');
 const assignRoutes = require('./routes/assignment.routes');
 const studentRoutes = require('./routes/student.routes');
+const timetableRoutes = require('./routes/timetable.routes');
 
 app.use(cookieParser());
 app.use(express.json());
@@ -31,9 +34,14 @@ app.use("/teacher", teacherRoutes)
 app.use('/public', express.static('public'));
 app.use('/assignment', assignRoutes);
 app.use('/student', studentRoutes);
+app.use('/timetable', timetableRoutes);
 const agenda =require('./jobs.js');
 
-app.listen(port, () => {    
+app.listen(4000, (err) => {
+    if(err) {
+        console.log('Error starting server:', err);
+        return;
+    }    
     console.log(`Server is running on port ${port}`);
 })
 
@@ -47,4 +55,3 @@ mongoose.connect(process.env.MONGO_URI)
 ).catch((err) => {
     console.log('Error connecting to MongoDB:', err);
 })
-

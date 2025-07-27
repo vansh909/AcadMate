@@ -1,2 +1,8 @@
+# Existing
 node_modules/
 google_apis_file.json
+
+# 🐍 Python-related (for ai-timetable folder)
+ai-timetable/venv/
+ai-timetable/__pycache__/
+*.pyc
